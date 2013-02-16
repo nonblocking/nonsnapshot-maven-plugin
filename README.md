@@ -9,7 +9,8 @@ dealing with SNAPSHOT versions really becomes unhandy. The main reasons are:
 
  1. The developers need to have all projects in the workspace to make sure the dependency resolution of the IDE works
  2. Manually versioning 100+ projects means a lot of effort
- 3. It makes a fully automatized deployment complicated, since you need a manual versioning step instead just pushing the latest build onto your servers
+ 3. It is not possible to reproduce the exact state of a project to any given time, when you depend on SNAPSHOT versions
+ 4. It makes a fully automatized deployment complicated, since you need a manual versioning step instead just pushing the latest build onto your servers
 
 What this plugin does
 ---------------------
