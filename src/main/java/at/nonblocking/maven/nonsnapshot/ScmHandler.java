@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Handle the access to the SCM system.
+ * Handle the access to the SCM (Source Code Management) system.
  * 
  * @author Juergen Kofler
  */

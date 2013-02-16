@@ -47,7 +47,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     protected static final String POMS_TO_COMMIT_TEXT_FILE = "nonSnapshotPomsToCommit.txt";
     
     /**
-     * The SCM (Source Control Management System) type
+     * The SCM (Source Code Management System) type
      * 
      * @parameter default-value="svn"
      */
