@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:projectArtifacts xmlns:ns2="http://nonblocking.at/nonsnapshot">
+    <currentBaseVersion>
+        <bugfixLevel>10</bugfixLevel>
+        <major>1</major>
+        <minor>0</minor>
+    </currentBaseVersion>
+    <artifacts>
+        <artifact>
+            <groupId>at.nonblocking</groupId>
+            <artifactId>test</artifactId>
+            <versions>
+                <version>
+                    <major>1</major>
+                    <minor>0</minor>
+                    <bugfixLevel>10</bugfixLevel>
+                    <scmRevision>1234</scmRevision>
+                </version>
+            </versions>
+        </artifact>
+        <artifact>
+            <groupId>at.nonblocking</groupId>
+            <artifactId>test2</artifactId>
+            <versions>
+                <version>
+                    <major>1</major>
+                    <minor>0</minor>
+                    <bugfixLevel>10</bugfixLevel>
+                    <scmRevision>1234</scmRevision>
+                </version>
+            </versions>
+        </artifact>
+    </artifacts>
+</ns2:projectArtifacts>
