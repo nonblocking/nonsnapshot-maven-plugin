@@ -77,7 +77,7 @@ The following goals are available:
 
 ### Using it on a CI Server
 
-A fully automatized auto-release is of course only possible if you use this plugin within a CI server (e.g. Jenkins).
+A fully automatized auto-release is of course only possible if you use this plugin within a CI server (e.g. *Jenkins*).
 
 First add the following optional configuration parameters:
 
@@ -90,15 +90,15 @@ Then configure the job on the CI server like this:
 
  1. Execute the goal *nonsnapshot:updateVersions*
  2. Build the whole project
- 3. Deploy all generated artifacts to your remote Maven repository (e.g. Artifactory)
+ 3. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
  4. Execute the goal *nonsnapshot:commitVersions*  
 
-On Jenkins you can use pre-build and post-build steps for #1 and #4.
+On *Jenkins* you can use pre-build and post-build steps for #1 and #4.
 
 This configuration guarantees that the artifact versions in the dependencies of a POM file are always available from the remote Maven repository. 
 (And so the developers no longer need all the Java projects in their workspace.)
 
-### Making auto-deployments easy
+### Making auto-deployments simple
 
 If you've once setup the auto-release as described above, auto-deployment is pretty simple:
 
@@ -115,7 +115,7 @@ For example:
 		</dependency>
 		<dependency>
 			<groupId>my.domain</groupId>
-			<artifactId>webapp2</artifactId
+			<artifactId>webapp2</artifactId>
 			<version>1.0.12-4555</version>
 			<type>war</type>
 		</dependency>
