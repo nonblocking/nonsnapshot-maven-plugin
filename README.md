@@ -1,2 +1,3 @@
-maven-nonsnapshot-plugin
+Maven Nonsnapshot Plugin
 ========================
+
