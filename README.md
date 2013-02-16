@@ -131,6 +131,9 @@ Limitations/TODO
 
 Works currently **only with Subversion**. But support for GIT is planned.
 
+Licence
+-------
 
+Licensed under the Apache License, Version 2.0.
 
 
