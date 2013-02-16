@@ -17,6 +17,7 @@
 			<version>3.0.4</version>
 		</dependency>		
 
+		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -28,15 +29,11 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- SVN support -->
 		<dependency>
 			<groupId>org.tmatesoft.svnkit</groupId>
 			<artifactId>svnkit</artifactId>
 			<version>1.7.5-v1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.2.4</version>
 		</dependency>
 
 		<!-- Test -->
