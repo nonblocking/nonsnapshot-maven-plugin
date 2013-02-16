@@ -39,10 +39,11 @@ The plugin can be added to a separate (POM-) project or the aggregator project. 
 	<groupId>at.nonblocking</groupId>
 	<artifactId>maven-nonsnapshot-plugin</artifactId>
 	<version>1.3</version>
-	<configuration>				
-		<scmUser>${svnUser}</scmUser>
-		<scmPassword>${svnPassword}</scmPassword>
+	<configuration>
 		<workspaceDir>${basedir}/..</workspaceDir>
+		<scmUser>${svnUser}</scmUser>
+		<scmPassword>${svnPassword}</scmPassword>		
+		<dependencyUpdateStrategy>ALWAYS</dependencyUpdateStrategy>
 		<baseVersions>
 			<baseVersion>
 				<groupId>my.domain</groupId>
@@ -64,6 +65,15 @@ The *baseVersions* state the base artifact versions the plugin shall assign. In 
 For the artifact *my-parent-artifact* and all its child modules newly assigned versions would start with *1.0.12*, 
 e.g. *1.0.12-4567*.
 
+The *dependencyUpdateStrategy* determines under which conditions a dependency to an artifact,
+which is present in the workspace, shall be updated. For example, if the strategy is *SAME_MAJOR* and the artifact in the
+workspace has a major version different from the one in the dependencies section of the POM, the dependency version
+isn't updated. Valid strategies are:
+
+ * ALWAYS (default)
+ * SAME_MAJOR
+ * SAME_MAJOR_MINOR
+ * SAME_BASE_VERSION
 
 Usage
 -----
