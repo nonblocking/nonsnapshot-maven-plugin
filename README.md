@@ -88,12 +88,13 @@ First add the following optional configuration parameters:
 
 Then configure the job on the CI server like this:
 
- 1. Execute the goal *nonsnapshot:updateVersions*
- 2. Build the whole project
- 3. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
- 4. Execute the goal *nonsnapshot:commitVersions*  
+ 1. Revert and update the workspace
+ 2. Execute the goal *nonsnapshot:updateVersions*
+ 3. Build the whole project
+ 4. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
+ 5. Execute the goal *nonsnapshot:commitVersions*  
 
-On *Jenkins* you can use pre-build and post-build steps for #1 and #4.
+On *Jenkins* you can use pre-build and post-build steps for #2 and #5.
 
 This configuration guarantees that the artifact versions in the dependencies of a POM file are always available from the remote Maven repository. 
 (And so the developers no longer need all the Java projects in their workspace.)
