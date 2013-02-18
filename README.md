@@ -16,23 +16,23 @@ How this plugin works
 ---------------------
 
 The aim of this plugin is to get rid of SNAPSHOT versions and periodically auto-release the whole project with all artifacts.
-The algorithm does the following:
+The algorithm works as follows:
 
- 1. Scans the whole workspace directory for Maven artifacts (they might also be in sub-modules)
- 2. Checks for all artifacts if there were changes (commits) since the last version update
- 3. Marks all artifacts with changes (commits) as dirty
- 4. Marks all artifacts as dirty which depend on dirty artifacts
- 5. Rewrites the pom.xml for all dirty artifacts with the new versions
- 6. Commits all changed pom.xml files
+ 1. Scan the whole workspace directory for Maven artifacts (they might also be in sub-modules)
+ 2. Check for all artifacts if there were changes (commits) since the last version update
+ 3. Mark all artifacts with changes (commits) as dirty
+ 4. Mark all artifacts as dirty which depend on dirty artifacts
+ 5. Rewrite the pom.xml of all dirty artifacts with the new version strings
+ 6. Commit all changed pom.xml files
 
 The generated artifact versions consist of a "base version", which can be configured, and the revision id as a qualifier.
 For SVN the versions look like *1.1.1-7432*, where 7432 is the revision number. In step 2 of the algorithm is simply tested
-if the current revision id differs from the revision id in the version.
+if the current revision id differs from the revision id part of the version string.
 
 Configuration
 -------------
 
-The plugin can be added to a separate (POM-) project or the aggregator project. Like this:
+The plugin can be added to a separate (POM-) project or your main aggregator project. Like this:
 
 ```xml
 <plugin>
@@ -84,7 +84,7 @@ The following goals are available:
 
  * *nonsnapshot:pretent*: Just shows how the versions would going to be changed. Does no actual POM rewrite or commit.
  * *nonsnapshot:updateVersions*: Rewrite all versions and commit. As soon the configuration parameter *deferPomCommit* is not set to true. In that case the commit is deferred.
- * *nonsnapshot:commitVersions*: Commits the POM files rewritten with the *updateVersions* goal. Makes only sense when *deferPomCommit" is set to true.   
+ * *nonsnapshot:commitVersions*: Commits the POM files rewritten by the *updateVersions* goal. Makes only sense when *deferPomCommit" is set to true.   
 
 ### Using it on a CI Server
 
@@ -97,7 +97,7 @@ First add the following optional configuration parameters:
 <dontFailOnCommit>true</dontFailOnCommit>
 ```
 
-Then configure the job on the CI server like this:
+Then configure the job on your CI server like this:
 
  1. Revert and update the workspace
  2. Execute the goal *nonsnapshot:updateVersions*
@@ -107,12 +107,12 @@ Then configure the job on the CI server like this:
 
 On *Jenkins* you can use pre-build and post-build steps for #2 and #5.
 
-This configuration guarantees that the artifact versions in the dependencies of a POM file are always available from the remote Maven repository. 
+This configuration guarantees that the artifact versions in the dependencies section of a POM file are always available from the remote Maven repository. 
 (And so the developers no longer need all the Java projects in their workspace.)
 
 ### Making auto-deployments simple
 
-If you've once setup the auto-release as described above, auto-deployment is pretty simple:
+If you've once set up the auto-release as described above, setting up an auto-deployment is pretty simple:
 
 Just create a new release (POM-) artifact which includes all your deployment artifacts in the dependencies section. 
 For example:
