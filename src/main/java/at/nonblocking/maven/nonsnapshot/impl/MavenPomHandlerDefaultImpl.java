@@ -199,7 +199,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             return;
         }
         if (wsArtifact.getNewVersion() == null) {
-            LOG.warn("Base version for artifact {}:{} not set, cannot update version!", wsArtifact.getGroupId(), wsArtifact.getArtifactId());
+            LOG.warn("New version for artifact {}:{} not set, cannot update version!", wsArtifact.getGroupId(), wsArtifact.getArtifactId());
             return;
         }
         

@@ -169,7 +169,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 if (wsArtifact.getNewVersion() != null) {
                     printStream.println(" -> " + wsArtifact.getNewVersion());
                 } else {
-                    printStream.println(" -> (Dirty, but no baseVersion definied!)");
+                    printStream.println(" -> (Dirty, but new version couldn't be determined!)");
                 }
             } else{
                 printStream.println(" ");   

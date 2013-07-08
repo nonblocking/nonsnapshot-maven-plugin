@@ -53,14 +53,15 @@ public class NonSnapshotUpdateVersionsMojoTest {
         File pom4 = new File("test4/pom.xm");
         File pom5 = new File("test5/pom.xm");
 
-        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(pom1, "nonblocking.at", "test1", "1.0.0-SNAPSHOT"); // Invalid
-                                                                                                                  // version
+        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(pom1, "nonblocking.at", "test1", "1.0.0-SNAPSHOT"); // Invalid version
+        wsArtifact1.setBaseVersion("1.0.0");
         WorkspaceArtifact wsArtifact2 = new WorkspaceArtifact(pom2, "nonblocking.at", "test2", "1.1.0-1234");
-        WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(pom3, "nonblocking.at", "test3", null); // Invalid
-                                                                                                      // version
+        WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(pom3, "nonblocking.at", "test3", null); // Invalid version
+        wsArtifact3.setBaseVersion("1.0.0");
         WorkspaceArtifact wsArtifact4 = new WorkspaceArtifact(pom4, "nonblocking.at", "test3", "2.1.0-FIX1-1234");
-        WorkspaceArtifact wsArtifact5 = new WorkspaceArtifact(pom5, "nonblocking.at", "test3", "${test.version}"); // Invalid
-                                                                                                                   // version
+        wsArtifact4.setBaseVersion("2.1.1");
+        WorkspaceArtifact wsArtifact5 = new WorkspaceArtifact(pom5, "nonblocking.at", "test3", "${test.version}"); // Invalid version
+        wsArtifact5.setBaseVersion("1.1.0");
 
         List<WorkspaceArtifact> artifactList = new ArrayList<WorkspaceArtifact>();
         artifactList.add(wsArtifact1);
@@ -79,7 +80,17 @@ public class NonSnapshotUpdateVersionsMojoTest {
 
         when(this.mockScmHandler.getRevisionId(pom2.getParentFile())).thenReturn("1234");
         when(this.mockScmHandler.getRevisionId(pom4.getParentFile())).thenReturn("5678");
-
+        
+        when(this.mockScmHandler.isWorkingCopy(pom1.getParentFile())).thenReturn(true);
+        when(this.mockScmHandler.isWorkingCopy(pom2.getParentFile())).thenReturn(false);
+        when(this.mockScmHandler.isWorkingCopy(pom3.getParentFile())).thenReturn(false);
+        when(this.mockScmHandler.isWorkingCopy(pom4.getParentFile())).thenReturn(true);
+        when(this.mockScmHandler.isWorkingCopy(pom5.getParentFile())).thenReturn(true);
+        
+        when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1234");
+        when(this.mockScmHandler.getNextRevisionId(pom4.getParentFile())).thenReturn("1234");
+        when(this.mockScmHandler.getNextRevisionId(pom5.getParentFile())).thenReturn("1234");
+        
         this.nonSnapshotMojo.execute();
 
         InOrder inOrder = inOrder(this.mockDependencyTreeProcessor, this.mockMavenPomHandler, this.mockScmHandler, this.mockWorkspaceTraverser);
@@ -93,19 +104,19 @@ public class NonSnapshotUpdateVersionsMojoTest {
         inOrder.verify(this.mockDependencyTreeProcessor).buildDependencyTree(artifactList);
         inOrder.verify(this.mockDependencyTreeProcessor).applyBaseVersions(artifactList, this.nonSnapshotMojo.getBaseVersions());
 
-        verify(this.mockScmHandler, times(0)).getRevisionId(pom1.getParentFile());
+        verify(this.mockScmHandler, never()).getRevisionId(pom1.getParentFile());
         inOrder.verify(this.mockScmHandler, times(1)).getRevisionId(pom2.getParentFile());
-        verify(this.mockScmHandler, times(0)).getRevisionId(pom3.getParentFile());
+        verify(this.mockScmHandler, never()).getRevisionId(pom3.getParentFile());
         inOrder.verify(this.mockScmHandler, times(1)).getRevisionId(pom4.getParentFile());
-        verify(this.mockScmHandler, times(0)).getRevisionId(pom5.getParentFile());
+        verify(this.mockScmHandler, never()).getRevisionId(pom5.getParentFile());
 
         inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact1, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
-        verify(this.mockMavenPomHandler, times(0)).updateArtifact(wsArtifact2, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
-        inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact3, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        verify(this.mockMavenPomHandler, never()).updateArtifact(wsArtifact2, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        verify(this.mockMavenPomHandler, never()).updateArtifact(wsArtifact3, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
         inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact4, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
         inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact5, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
 
-        inOrder.verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom3, pom4, pom5), "Nonsnapshot Plugin: Version of 4 artifacts updated");
+        inOrder.verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom4, pom5), "Nonsnapshot Plugin: Version of 3 artifacts updated");
     }
 
     @Test
@@ -145,8 +156,8 @@ public class NonSnapshotUpdateVersionsMojoTest {
             pomsToCommit.delete();
         }
 
-        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(pom1, "nonblocking.at", "test1", "1.0.0-1222");
-
+        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(pom1, "at.nonblocking", "test3", "1.0.0-1222");
+        wsArtifact1.setBaseVersion("1.0.0");
         List<WorkspaceArtifact> artifactList = new ArrayList<WorkspaceArtifact>();
         artifactList.add(wsArtifact1);
 
@@ -156,7 +167,10 @@ public class NonSnapshotUpdateVersionsMojoTest {
         when(this.mockDependencyTreeProcessor.buildDependencyTree(artifactList)).thenReturn(artifactList);
 
         when(this.mockScmHandler.getRevisionId(pom1.getParentFile())).thenReturn("1333");
+        when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1444");
+        when(this.mockScmHandler.isWorkingCopy(pom1.getParentFile())).thenReturn(true);
 
+        
         this.nonSnapshotMojo.execute();
 
         assertTrue(pomsToCommit.exists());

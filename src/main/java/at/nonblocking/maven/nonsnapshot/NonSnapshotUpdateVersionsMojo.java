@@ -83,8 +83,9 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         List<File> pomsToCommit = new ArrayList<File>();
 
         for (WorkspaceArtifact workspaceArtifact : workspaceArtifacts) {
-            if (workspaceArtifact.isDirty()) {
+            if (workspaceArtifact.isDirty() && workspaceArtifact.getNewVersion() != null) {
                 getMavenPomHandler().updateArtifact(workspaceArtifact, getDependencyUpdateStrategy());
+                LOG.info("Add POM file to commit list: ", workspaceArtifact.getPomFile().getAbsolutePath());
                 pomsToCommit.add(workspaceArtifact.getPomFile());
             }
         }
