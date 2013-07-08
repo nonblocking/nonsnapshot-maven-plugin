@@ -4,8 +4,8 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>at.nonblocking</groupId>
-	<artifactId>maven-nonsnapshot-plugin</artifactId>
-	<version>1.3</version>
+	<artifactId>nonsnapshot-maven-plugin</artifactId>
+	<version>1.4</version>
 	<packaging>maven-plugin</packaging>
 	<name>Maven Nonsnapshot Plugin</name>
 	<url>https://github.com/nonblocking/maven-nonsnapshot-plugin</url>
