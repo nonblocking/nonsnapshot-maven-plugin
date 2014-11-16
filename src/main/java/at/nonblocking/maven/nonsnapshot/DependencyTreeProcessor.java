@@ -18,7 +18,7 @@ package at.nonblocking.maven.nonsnapshot;
 import java.io.PrintStream;
 import java.util.List;
 
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
 /**
  * Methods to process the Maven depedency tree found in the Workspace.
@@ -35,33 +35,33 @@ public interface DependencyTreeProcessor {
      * <br/><br/>
      * Returns a list of root artifacts, with parent == null.  
      * 
-     * @param artifacts List<WorkspaceArtifact - List of all workspace artifacts
+     * @param artifacts List<MavenModule - List of all workspace artifacts
      * @return List<WorkspaceArtifact>
      */
-    List<WorkspaceArtifact> buildDependencyTree(List<WorkspaceArtifact> artifacts);
+    List<MavenModule> buildDependencyTree(List<MavenModule> artifacts);
     
     /**
      * Apply given base versions to the artifact trees.
      * 
-     * @param rootArtifacts List<WorkspaceArtifact>
-     * @param baseVersions List<ArtifactBaseVersion> 
+     * @param rootArtifacts List<MavenModule>
+     * @param baseVersion String
      */
-    void applyBaseVersions(List<WorkspaceArtifact> rootArtifacts, List<BaseVersion> baseVersions);
+    void applyBaseVersions(List<MavenModule> rootArtifacts, String baseVersion);
     
     /**
      * Mark all artifacts with dirty dependencies dirty.
      * 
-     * @param artifacts List<WorkspaceArtifact>
+     * @param artifacts List<MavenModule>
      * @return boolean True if any new artifacts have been marked dirty
      */
-    boolean markAllArtifactsDirtyWithDirtyDependencies(List<WorkspaceArtifact> artifacts);
+    boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts);
     
     /**
      * Print the artifact tree found in the workspace for debug purposes.
      * 
-     * @param rootArtifacts List<WorkspaceArtifact>
+     * @param rootArtifacts List<MavenModule>
      * @param printStream PrintStream
      */
-    void printWorkspaceArtifactTree(List<WorkspaceArtifact> rootArtifacts, PrintStream printStream);
+    void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream);
     
 }

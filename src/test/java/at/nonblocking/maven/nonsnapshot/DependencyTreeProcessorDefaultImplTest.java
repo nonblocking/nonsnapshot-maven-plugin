@@ -11,8 +11,8 @@ import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.impl.DependencyTreeProcessorDefaultImpl;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifactDependency;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 public class DependencyTreeProcessorDefaultImplTest {
 
@@ -23,22 +23,22 @@ public class DependencyTreeProcessorDefaultImplTest {
     
     @Test
     public void testBuildDependencyTree() {       
-       WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "parent", "1.0.0");
-       WorkspaceArtifact wsArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1", "1.0.0");
-       WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1-module1", "1.0.0");
-       WorkspaceArtifact wsArtifact4 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1-module2", "1.0.0");
-       WorkspaceArtifact wsArtifact5 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.0.0");
-       WorkspaceArtifact wsArtifact6 = new WorkspaceArtifact(null, "at.nonblocking.at", "plugin1", "1.0.0");
+       MavenModule wsArtifact1 = new MavenModule(null, "at.nonblocking.at", "parent", "1.0.0");
+       MavenModule wsArtifact2 = new MavenModule(null, "at.nonblocking.at", "test1", "1.0.0");
+       MavenModule wsArtifact3 = new MavenModule(null, "at.nonblocking.at", "test1-module1", "1.0.0");
+       MavenModule wsArtifact4 = new MavenModule(null, "at.nonblocking.at", "test1-module2", "1.0.0");
+       MavenModule wsArtifact5 = new MavenModule(null, "at.nonblocking.at", "test2", "1.0.0");
+       MavenModule wsArtifact6 = new MavenModule(null, "at.nonblocking.at", "plugin1", "1.0.0");
         
-       wsArtifact1.getDependencies().add(new WorkspaceArtifactDependency(0, new MavenArtifact("at.nonblocking.at", "plugin1", "1.0.0")));
-       wsArtifact1.getDependencies().add(new WorkspaceArtifactDependency(0, new MavenArtifact("junit", "junit", "4.7")));
+       wsArtifact1.getDependencies().add(new MavenModuleDependency(0, new MavenArtifact("at.nonblocking.at", "plugin1", "1.0.0")));
+       wsArtifact1.getDependencies().add(new MavenModuleDependency(0, new MavenArtifact("junit", "junit", "4.7")));
        wsArtifact2.setParent(new MavenArtifact("at.nonblocking.at", "parent", "1.0.0"));
-       wsArtifact2.getDependencies().add(new WorkspaceArtifactDependency(0, new MavenArtifact("at.nonblocking.at", "test2", "1.0.0")));
+       wsArtifact2.getDependencies().add(new MavenModuleDependency(0, new MavenArtifact("at.nonblocking.at", "test2", "1.0.0")));
        wsArtifact3.setParent(new MavenArtifact("at.nonblocking.at", "test1", "1.0.0"));
        wsArtifact4.setParent(new MavenArtifact("at.nonblocking.at", "test1", "1.0.0"));
        wsArtifact5.setParent(new MavenArtifact("at.nonblocking.at", "parent", "1.0.0"));       
 
-       List<WorkspaceArtifact> artifacts = new ArrayList<WorkspaceArtifact>();
+       List<MavenModule> artifacts = new ArrayList<MavenModule>();
        artifacts.add(wsArtifact1);
        artifacts.add(wsArtifact2);
        artifacts.add(wsArtifact3);
@@ -48,26 +48,26 @@ public class DependencyTreeProcessorDefaultImplTest {
        
        DependencyTreeProcessor dependencyTreeProcessor = new DependencyTreeProcessorDefaultImpl();
        
-       List<WorkspaceArtifact> rootArtifacts = dependencyTreeProcessor.buildDependencyTree(artifacts);
+       List<MavenModule> rootArtifacts = dependencyTreeProcessor.buildDependencyTree(artifacts);
 
        assertNotNull(rootArtifacts);
        assertEquals(2, rootArtifacts.size());
        assertEquals(2, rootArtifacts.get(0).getChildren().size());
        assertEquals(0, rootArtifacts.get(1).getChildren().size());
        
-       dependencyTreeProcessor.printWorkspaceArtifactTree(rootArtifacts, System.out);
+       dependencyTreeProcessor.printMavenModuleTree(rootArtifacts, System.out);
     }
     
     @Test
     public void testApplyBaseVersions() {
-        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "parent", "1.0.0");
-        WorkspaceArtifact wsArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1", "1.0.0");
-        WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1-module1", "1.0.0");
-        WorkspaceArtifact wsArtifact4 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1-module2", "1.0.0");
-        WorkspaceArtifact wsArtifact5 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.0.0");
-        WorkspaceArtifact wsArtifact6 = new WorkspaceArtifact(null, "at.nonblocking.at", "plugin1", "1.0.0");
+        MavenModule wsArtifact1 = new MavenModule(null, "at.nonblocking.at", "parent", "1.0.0");
+        MavenModule wsArtifact2 = new MavenModule(null, "at.nonblocking.at", "test1", "1.0.0");
+        MavenModule wsArtifact3 = new MavenModule(null, "at.nonblocking.at", "test1-module1", "1.0.0");
+        MavenModule wsArtifact4 = new MavenModule(null, "at.nonblocking.at", "test1-module2", "1.0.0");
+        MavenModule wsArtifact5 = new MavenModule(null, "at.nonblocking.at", "test2", "1.0.0");
+        MavenModule wsArtifact6 = new MavenModule(null, "at.nonblocking.at", "plugin1", "1.0.0");
          
-        wsArtifact1.getDependencies().add(new WorkspaceArtifactDependency(0, wsArtifact6));
+        wsArtifact1.getDependencies().add(new MavenModuleDependency(0, wsArtifact6));
         wsArtifact1.getChildren().add(wsArtifact2);
         wsArtifact1.getChildren().add(wsArtifact5);
         wsArtifact1.setDirty(true);
@@ -75,7 +75,7 @@ public class DependencyTreeProcessorDefaultImplTest {
         wsArtifact2.setParent(wsArtifact1);
         wsArtifact2.getChildren().add(wsArtifact3);
         wsArtifact2.getChildren().add(wsArtifact4);        
-        wsArtifact2.getDependencies().add(new WorkspaceArtifactDependency(0, wsArtifact5));
+        wsArtifact2.getDependencies().add(new MavenModuleDependency(0, wsArtifact5));
         wsArtifact2.setDirty(true);
         wsArtifact2.setNextRevisionId("0");
         wsArtifact3.setParent(wsArtifact2);
@@ -90,7 +90,7 @@ public class DependencyTreeProcessorDefaultImplTest {
         wsArtifact6.setDirty(true);
         wsArtifact6.setNextRevisionId("0");
         
-        List<WorkspaceArtifact> artifacts = new ArrayList<WorkspaceArtifact>();
+        List<MavenModule> artifacts = new ArrayList<MavenModule>();
         artifacts.add(wsArtifact1);
         artifacts.add(wsArtifact2);
         artifacts.add(wsArtifact3);
@@ -98,39 +98,34 @@ public class DependencyTreeProcessorDefaultImplTest {
         artifacts.add(wsArtifact5);
         artifacts.add(wsArtifact6);
 
-        List<WorkspaceArtifact> rootArtifacts = new ArrayList<WorkspaceArtifact>();
+        List<MavenModule> rootArtifacts = new ArrayList<MavenModule>();
         rootArtifacts.add(wsArtifact1);
         rootArtifacts.add(wsArtifact6);
-        
-        List<BaseVersion> baseVersions = new ArrayList<BaseVersion>();
-        baseVersions.add(new BaseVersion("at.nonblocking.at", "parent", "2.1.2"));
-        baseVersions.add(new BaseVersion("at.nonblocking.at", "test1-module2", "1.2.2"));
-        baseVersions.add(new BaseVersion("at.nonblocking.at", "plugin1", "3.0.1"));
-              
+
         DependencyTreeProcessor dependencyTreeProcessor = new DependencyTreeProcessorDefaultImpl();
                 
-        dependencyTreeProcessor.applyBaseVersions(rootArtifacts, baseVersions);
+        dependencyTreeProcessor.applyBaseVersions(rootArtifacts, "2.1.2");
         
         assertEquals("2.1.2", wsArtifact1.getBaseVersion());
         assertEquals("2.1.2", wsArtifact2.getBaseVersion());
         assertEquals("2.1.2", wsArtifact3.getBaseVersion());
-        assertEquals("1.2.2", wsArtifact4.getBaseVersion());
+        assertEquals("2.1.2", wsArtifact4.getBaseVersion());
         assertEquals("2.1.2", wsArtifact5.getBaseVersion());
-        assertEquals("3.0.1", wsArtifact6.getBaseVersion());
+        assertEquals("2.1.2", wsArtifact6.getBaseVersion());
         
-        dependencyTreeProcessor.printWorkspaceArtifactTree(rootArtifacts, System.out);        
+        dependencyTreeProcessor.printMavenModuleTree(rootArtifacts, System.out);
     }
     
     @Test
     public void testMarkAllArtifactsDirtyWithDirtyDependencies()  {
-        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1", "1.0.0");
-        WorkspaceArtifact wsArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.0.0");
-        WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(null, "at.nonblocking.at", "plugin1", "1.0.0");
+        MavenModule wsArtifact1 = new MavenModule(null, "at.nonblocking.at", "test1", "1.0.0");
+        MavenModule wsArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "1.0.0");
+        MavenModule wsArtifact3 = new MavenModule(null, "at.nonblocking.at", "plugin1", "1.0.0");
          
-        wsArtifact2.getDependencies().add(new WorkspaceArtifactDependency(0, wsArtifact3));
+        wsArtifact2.getDependencies().add(new MavenModuleDependency(0, wsArtifact3));
         wsArtifact3.setDirty(true);
         
-        List<WorkspaceArtifact> artifacts = new ArrayList<WorkspaceArtifact>();
+        List<MavenModule> artifacts = new ArrayList<MavenModule>();
         artifacts.add(wsArtifact1);
         artifacts.add(wsArtifact2);
         artifacts.add(wsArtifact3);
@@ -147,22 +142,22 @@ public class DependencyTreeProcessorDefaultImplTest {
         assertTrue(wsArtifact2.isDirty());
         assertTrue(wsArtifact3.isDirty());
         
-        dependencyTreeProcessor.printWorkspaceArtifactTree(artifacts, System.out);
+        dependencyTreeProcessor.printMavenModuleTree(artifacts, System.out);
     }
     
     @Test
     public void testMarkAllArtifactsDirtyWithDirtyDependenciesRecursive()  {        
-        WorkspaceArtifact wsArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "test1", "1.0.0");
-        WorkspaceArtifact wsArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.0.0");
-        WorkspaceArtifact wsArtifact3 = new WorkspaceArtifact(null, "at.nonblocking.at", "plugin1", "1.0.0");
-        WorkspaceArtifact wsArtifact4 = new WorkspaceArtifact(null, "at.nonblocking.at", "test", "1.0.0");
+        MavenModule wsArtifact1 = new MavenModule(null, "at.nonblocking.at", "test1", "1.0.0");
+        MavenModule wsArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "1.0.0");
+        MavenModule wsArtifact3 = new MavenModule(null, "at.nonblocking.at", "plugin1", "1.0.0");
+        MavenModule wsArtifact4 = new MavenModule(null, "at.nonblocking.at", "test", "1.0.0");
         
         //4 -> 2 -> 3 (dirty)
-        wsArtifact4.getDependencies().add(new WorkspaceArtifactDependency(0, wsArtifact2));
-        wsArtifact2.getDependencies().add(new WorkspaceArtifactDependency(0, wsArtifact3));
+        wsArtifact4.getDependencies().add(new MavenModuleDependency(0, wsArtifact2));
+        wsArtifact2.getDependencies().add(new MavenModuleDependency(0, wsArtifact3));
         wsArtifact3.setDirty(true);
         
-        List<WorkspaceArtifact> artifacts = new ArrayList<WorkspaceArtifact>();
+        List<MavenModule> artifacts = new ArrayList<MavenModule>();
         artifacts.add(wsArtifact1);
         artifacts.add(wsArtifact2);
         artifacts.add(wsArtifact3);
@@ -181,6 +176,6 @@ public class DependencyTreeProcessorDefaultImplTest {
         assertTrue(wsArtifact3.isDirty());
         assertTrue(wsArtifact4.isDirty());
         
-        dependencyTreeProcessor.printWorkspaceArtifactTree(artifacts, System.out);
+        dependencyTreeProcessor.printMavenModuleTree(artifacts, System.out);
     }
 }

@@ -24,11 +24,10 @@ import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.nonblocking.maven.nonsnapshot.BaseVersion;
 import at.nonblocking.maven.nonsnapshot.DependencyTreeProcessor;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifactDependency;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 /**
  * Default {@link DependencyTreeProcessor} implementation.
@@ -41,12 +40,12 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     private static final Logger LOG = LoggerFactory.getLogger(DependencyTreeProcessorDefaultImpl.class);
     
     @Override
-    public List<WorkspaceArtifact> buildDependencyTree(List<WorkspaceArtifact> artifacts) {
-        List<WorkspaceArtifact> rootArtifacts = new ArrayList<WorkspaceArtifact>();
+    public List<MavenModule> buildDependencyTree(List<MavenModule> artifacts) {
+        List<MavenModule> rootArtifacts = new ArrayList<MavenModule>();
 
-        for (WorkspaceArtifact wsArtifact : artifacts) {
+        for (MavenModule wsArtifact : artifacts) {
             if (wsArtifact.getParent() != null) {
-                WorkspaceArtifact parentWsArtifact = findArtifact(artifacts, wsArtifact.getParent().getGroupId(), wsArtifact.getParent().getArtifactId());
+                MavenModule parentWsArtifact = findArtifact(artifacts, wsArtifact.getParent().getGroupId(), wsArtifact.getParent().getArtifactId());
                 if (parentWsArtifact != null) {
                     parentWsArtifact.getChildren().add(wsArtifact);
                     wsArtifact.setParent(parentWsArtifact);
@@ -55,8 +54,8 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 rootArtifacts.add(wsArtifact);
             }
 
-            for (WorkspaceArtifactDependency dependency : wsArtifact.getDependencies()) {
-                WorkspaceArtifact dependencyWsArtifact = findArtifact(artifacts, dependency.getArtifact().getGroupId(), dependency.getArtifact()
+            for (MavenModuleDependency dependency : wsArtifact.getDependencies()) {
+                MavenModule dependencyWsArtifact = findArtifact(artifacts, dependency.getArtifact().getGroupId(), dependency.getArtifact()
                         .getArtifactId());
                 if (dependencyWsArtifact != null) {
                     dependency.setArtifact(dependencyWsArtifact);
@@ -67,8 +66,8 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
         return rootArtifacts;
     }
 
-    private WorkspaceArtifact findArtifact(List<WorkspaceArtifact> artifacts, String groupId, String artifactId) {
-        for (WorkspaceArtifact artifact : artifacts) {
+    private MavenModule findArtifact(List<MavenModule> artifacts, String groupId, String artifactId) {
+        for (MavenModule artifact : artifacts) {
             if (groupId.equals(artifact.getGroupId()) && artifactId.equals(artifact.getArtifactId())) {
                 return artifact;
             }
@@ -78,54 +77,32 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     }
 
     @Override
-    public void applyBaseVersions(List<WorkspaceArtifact> rootArtifacts, List<BaseVersion> baseVersions) {
-        for (WorkspaceArtifact rootArtifact : rootArtifacts) {
-            applyBaseVersions(rootArtifact, baseVersions);
+    public void applyBaseVersions(List<MavenModule> rootArtifacts, String baseVersion) {
+        for (MavenModule rootArtifact : rootArtifacts) {
+            applyBaseVersions(rootArtifact, baseVersion);
         }       
     }
-    
-    private void applyBaseVersions(WorkspaceArtifact artifact, List<BaseVersion> baseVersions) {
-        String baseVersion = findBaseVersion(baseVersions, artifact.getGroupId(), artifact.getArtifactId());
-        
-        if (baseVersion == null && artifact.getParent() != null && artifact.getParent() instanceof WorkspaceArtifact) {
-            baseVersion = ((WorkspaceArtifact) artifact.getParent()).getBaseVersion();
-            if (baseVersion != null) {
-                baseVersions.add(new BaseVersion(artifact.getGroupId(), artifact.getArtifactId(), baseVersion));
-            } else {
-                LOG.warn("No base version found for workspace artifact {}:{}", artifact.getGroupId(), artifact.getArtifactId());
-                return;                
-            }
-        }
-        
+
+    private void applyBaseVersions(MavenModule artifact, String baseVersion) {
         LOG.debug("Applying base version '{}' to artifact {}:{}", new Object[] { baseVersion, artifact.getGroupId(), artifact.getArtifactId() });
         artifact.setBaseVersion(baseVersion);
-        
-        for (WorkspaceArtifact child : artifact.getChildren()) {
-            applyBaseVersions(child, baseVersions);
+
+        for (MavenModule child : artifact.getChildren()) {
+            applyBaseVersions(child, baseVersion);
         }
-    }
-    
-    private String findBaseVersion(List<BaseVersion> baseVersions, String groupId, String artifactId) {
-        for (BaseVersion baseVersion : baseVersions) {
-            if (groupId.equals(baseVersion.getGroupId()) && artifactId.equals(baseVersion.getArtifactId())) {
-                return baseVersion.getVersion();
-            }
-        }
-        
-        return null;
     }
 
     @Override
-    public boolean markAllArtifactsDirtyWithDirtyDependencies(List<WorkspaceArtifact> artifacts) {
+    public boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts) {
         boolean changes = false;
         
-        for (WorkspaceArtifact artifact : artifacts) {
+        for (MavenModule artifact : artifacts) {
             if (artifact.isDirty()) {
                 continue;
             }
             
-            if (artifact.getParent() != null && artifact.getParent() instanceof WorkspaceArtifact) {
-                WorkspaceArtifact parentWsArtifact = (WorkspaceArtifact) artifact.getParent();
+            if (artifact.getParent() != null && artifact.getParent() instanceof MavenModule) {
+                MavenModule parentWsArtifact = (MavenModule) artifact.getParent();
                 if (parentWsArtifact.isDirty()) {
                     LOG.debug("Marking artifact {}:{} dirty because parent is dirty.", artifact.getGroupId(), artifact.getArtifactId());
                     artifact.setDirty(true);
@@ -134,9 +111,9 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 }
             }
             
-            for (WorkspaceArtifactDependency dependency : artifact.getDependencies()) {
-                if (dependency.getArtifact() instanceof WorkspaceArtifact) {
-                    WorkspaceArtifact dependencyWsArtifact = (WorkspaceArtifact) dependency.getArtifact();
+            for (MavenModuleDependency dependency : artifact.getDependencies()) {
+                if (dependency.getArtifact() instanceof MavenModule) {
+                    MavenModule dependencyWsArtifact = (MavenModule) dependency.getArtifact();
                     if (dependencyWsArtifact.isDirty()) {
                         LOG.debug("Marking artifact {}:{} dirty because dependency is dirty: {}:{}", 
                                 new Object[] { artifact.getGroupId(), artifact.getArtifactId(), dependencyWsArtifact.getGroupId(), dependencyWsArtifact.getArtifactId() });
@@ -152,8 +129,8 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     }
 
     @Override
-    public void printWorkspaceArtifactTree(List<WorkspaceArtifact> rootArtifacts, PrintStream printStream) {
-        for (WorkspaceArtifact rootArtifact : rootArtifacts) {
+    public void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream) {
+        for (MavenModule rootArtifact : rootArtifacts) {
             printTree(rootArtifact, printStream, 0);
         }
     }
@@ -161,8 +138,8 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     private void printTree(MavenArtifact artifact, PrintStream printStream, int level) {
         printStream.print(StringUtils.leftPad(" ", level * 3));
 
-        if (artifact instanceof WorkspaceArtifact) {
-            WorkspaceArtifact wsArtifact = (WorkspaceArtifact) artifact;
+        if (artifact instanceof MavenModule) {
+            MavenModule wsArtifact = (MavenModule) artifact;
 
             printStream.print(wsArtifact.getGroupId() + ":" + wsArtifact.getArtifactId() + ":" + wsArtifact.getVersion());
             if (wsArtifact.isDirty()) {
@@ -175,7 +152,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 printStream.println(" ");   
             }
 
-            for (WorkspaceArtifact child : wsArtifact.getChildren()) {
+            for (MavenModule child : wsArtifact.getChildren()) {
                 printTree(child, printStream, level + 1);
             }
 

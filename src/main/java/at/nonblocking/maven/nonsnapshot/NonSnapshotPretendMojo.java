@@ -17,26 +17,26 @@ package at.nonblocking.maven.nonsnapshot;
 
 import java.util.List;
 
+import org.apache.maven.plugins.annotations.Mojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
 /**
  * Test Plugin Goal which not actually updates the POMs.
  * 
  * @author Juergen Kofler
- * 
- * @goal pretend
  */
+@Mojo(name = "pretend", aggregator = true)
 public class NonSnapshotPretendMojo extends NonSnapshotUpdateVersionsMojo {
 
     private static Logger LOG = LoggerFactory.getLogger(NonSnapshotPretendMojo.class);
 
     @Override
-    protected void writeAndCommitArtifacts(List<WorkspaceArtifact> workspaceArtifacts) {
+    protected void writeAndCommitArtifacts(List<MavenModule> workspaceArtifacts) {
        int dirtyCount = 0;
-       for (WorkspaceArtifact artifact : workspaceArtifacts) {
+       for (MavenModule artifact : workspaceArtifacts) {
            if (artifact.isDirty()) {
                dirtyCount ++;
            }

@@ -21,12 +21,18 @@ import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
@@ -44,113 +50,91 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
     private static final Logger LOG = LoggerFactory.getLogger(NonSnapshotBaseMojo.class);
 
-    protected static final String POMS_TO_COMMIT_TEXT_FILE = "nonSnapshotPomsToCommit.txt";
+    protected static final String DIRTY_MODULES_REGISTRY_FILE = "nonSnapshotDirtyModules.txt";
     
     /**
      * The SCM (Source Code Management System) type
-     * 
-     * @parameter default-value="svn"
      */
+    @Parameter(defaultValue = "svn")
     private String scmType;
     
     /**
      * SCM Username
-     * 
-     * @parameter
      */
+    @Parameter
     private String scmUser;
 
     /**
      * SCM Password
-     * 
-     * @parameter
      */
+    @Parameter
     private String scmPassword;
 
     /**
      * Defer the actual commit until nonsnapshot:commit is called.
-     * 
-     * @parameter default-value="false"
      */
+    @Parameter(defaultValue="false")
     private boolean deferPomCommit;
-    
+
+    @Parameter(defaultValue = "false")
+    private boolean dontFailOnUpstreamVersionResolution;
+
     /**
      * Don't let the build fail if the commit of the POM files fails.
      * <br/>
      * Useful if you run this plugin on a CI Server and don't want to let the build fail when
      * a concurrent POM update occurred.
-     * 
-     * @parameter default-value="false"
      */
+    @Parameter(defaultValue = "false")
     private boolean dontFailOnCommit;
-    
-    /**
-     * The workspace base directory
-     * 
-     * @parameter
-     * @required
-     */
-    private File workspaceDir;
+
+    @Parameter(defaultValue = "${project}")
+    private MavenProject mavenProject;
+
+    @Parameter(required = true)
+    private String baseVersion;
+
+    @Parameter
+    private List<String> upstreamGroupIds;
 
     /**
-     * Folders in the workspace directory to exclude
-     * 
-     * @parameter
+     * Generate a shell script to incrementally build only dirty artifacts (Maven > 3.2.1 only)
      */
-    private List<String> excludeFolders;
-
-    /**
-     * Base versions for workspace artifacts. <br/>
-     * E.g.:
-     * 
-     * <pre>
-     *   &lt;configuration&gt;
-     *     &lt;baseVersions&gt;
-     *       &lt;baseVersion&gt;
-     *         &lt;groupId&gt;at.nonblocking&lt;/groupId&gt;
-     *         &lt;artifactId&gt;test&lt;/artifactId&gt;
-     *         &lt;version&gt;1.0.0&lt;/version&gt;
-     *       &lt;/baseVersion&gt;
-     *     &lt;/baseVersions&gt;
-     *   &lt;/configuration&gt;
-     * </pre>
-     * 
-     * @parameter
-     * @required
-     */
-    private List<BaseVersion> baseVersions;
+    @Parameter(defaultValue = "false")
+    private boolean generateScriptForIncrementalBuild;
 
     /**
      * When to update dependency versions. 
      * <br/>
      * E.g. if the strategy is SAME_MAJOR and an artifact from the dependency list is in the workspace but has another
      * major version, the dependency version isn't updated.
-     * 
-     * @parameter default-value="ALWAYS"
      */
+    @Parameter(defaultValue = "ALWAYS")
     private DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy;
 
     /**
      * Disable this plugin
-     * 
-     * @parameter default-value="false"
      */
+    @Parameter(defaultValue = "false")
     private boolean skip;
 
-    /** 
-     * @component role="at.nonblocking.maven.nonsnapshot.MavenPomHandler" role-hint="default" 
-     */
+    @Component(role = MavenPomHandler.class, hint = "default")
     private MavenPomHandler mavenPomHandler;
 
-    /** 
-     * @component role="at.nonblocking.maven.nonsnapshot.WorkspaceTraverser" role-hint="default" 
-     */
-    private WorkspaceTraverser workspaceTraverser;
+    @Component(role = ModuleTraverser.class, hint = "default")
+    private ModuleTraverser moduleTraverser;
 
-    /** 
-     * @component role="at.nonblocking.maven.nonsnapshot.DependencyTreeProcessor" role-hint="default" 
-     */
+    @Component(role = DependencyTreeProcessor.class, hint = "default")
     private DependencyTreeProcessor dependencyTreeProcessor;
+
+    @Component
+    private RepositorySystem repositorySystem;
+
+    @Parameter(defaultValue = "${repositorySystemSession}")
+    private RepositorySystemSession repositorySystemSession;
+
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}")
+    private List<RemoteRepository> remoteRepositories;
 
     private ScmHandler scmHandler;
     
@@ -164,7 +148,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
             return;
         }
 
-        LOG.info("Executing NonSnapshot Plugin for project path: {}", this.workspaceDir.getAbsoluteFile());
+        LOG.info("Executing NonSnapshot Plugin for project path: {}", this.mavenProject.getBasedir().getAbsolutePath());
 
         postProcessParameters();
 
@@ -192,7 +176,11 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
         this.scmHandler.setCredentials(this.scmUser, this.scmPassword);
     }
-    
+
+    protected File getDirtyModulesRegistryFile() {
+        return new File(this.mavenProject.getBasedir(), DIRTY_MODULES_REGISTRY_FILE);
+    }
+
     @Override
     public void contextualize(Context context) throws ContextException {  
         this.plexusContainer = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
@@ -212,18 +200,6 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
     public void setDeferPomCommit(boolean deferPomCommit) {
         this.deferPomCommit = deferPomCommit;
-    }
-
-    public void setWorkspaceDir(File workspaceDir) {
-        this.workspaceDir = workspaceDir;
-    }
-
-    public void setExcludeFolders(List<String> excludeFolders) {
-        this.excludeFolders = excludeFolders;
-    }
-
-    public void setBaseVersions(List<BaseVersion> baseVersions) {
-        this.baseVersions = baseVersions;
     }
 
     public void setSkip(boolean skip) {
@@ -250,8 +226,12 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         this.dependencyTreeProcessor = dependencyTreeProcessor;
     }
 
-    public void setWorkspaceTraverser(WorkspaceTraverser workspaceTraverser) {
-        this.workspaceTraverser = workspaceTraverser;
+    public void setModuleTraverser(ModuleTraverser moduleTraverser) {
+        this.moduleTraverser = moduleTraverser;
+    }
+
+    public ModuleTraverser getModuleTraverser() {
+        return moduleTraverser;
     }
 
     public boolean isDeferPomCommit() {
@@ -266,10 +246,6 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         this.dontFailOnCommit = dontFailOnCommit;
     }
 
-    public List<BaseVersion> getBaseVersions() {
-        return baseVersions;
-    }
-
     public void setDependencyUpdateStrategy(DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
         this.dependencyUpdateStrategy = dependencyUpdateStrategy;
     }
@@ -278,16 +254,39 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         return dependencyUpdateStrategy;
     }
 
-    public File getWorkspaceDir() {
-        return workspaceDir;
+    public void setMavenProject(MavenProject mavenProject) {
+        this.mavenProject = mavenProject;
     }
 
-    public WorkspaceTraverser getWorkspaceTraverser() {
-        return workspaceTraverser;
+    public MavenProject getMavenProject() {
+        return mavenProject;
     }
 
-    public List<String> getExcludeFolders() {
-        return excludeFolders;
+    public void setBaseVersion(String baseVersion) {
+        this.baseVersion = baseVersion;
     }
 
+    public String getBaseVersion() {
+        return baseVersion;
+    }
+
+    public List<String> getUpstreamGroupIds() {
+        return upstreamGroupIds;
+    }
+
+    public List<RemoteRepository> getRemoteRepositories() {
+        return remoteRepositories;
+    }
+
+    public RepositorySystem getRepositorySystem() {
+        return repositorySystem;
+    }
+
+    public RepositorySystemSession getRepositorySystemSession() {
+        return repositorySystemSession;
+    }
+
+    public boolean isDontFailOnUpstreamVersionResolution() {
+        return dontFailOnUpstreamVersionResolution;
+    }
 }

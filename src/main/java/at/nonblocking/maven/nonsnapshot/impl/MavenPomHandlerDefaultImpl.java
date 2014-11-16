@@ -45,8 +45,8 @@ import at.nonblocking.maven.nonsnapshot.DEPENDENCY_UPDATE_STRATEGY;
 import at.nonblocking.maven.nonsnapshot.MavenPomHandler;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifactDependency;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 /**
  * Default implementation of {@link MavenPomHandler}
@@ -61,22 +61,28 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     @Override
-    public WorkspaceArtifact readArtifact(File pomFile) {
+    public MavenModule readArtifact(File pomFile) {
         LOG.debug("Loading POM file: {}", pomFile.getAbsolutePath());
 
         InputSource is = new InputSource();
         MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
 
-        Model model = null;
-        
         try {
-            model = reader.read(ReaderFactory.newXmlReader(pomFile), false, is);
+            Model model = reader.read(ReaderFactory.newXmlReader(pomFile), false, is);
+            model.setPomFile(pomFile);
+            return readArtifact(model);
+
         } catch (IOException e) {
             throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
         } catch (XmlPullParserException e) {
             throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
         }
-        
+    }
+
+    @Override
+    public MavenModule readArtifact(Model model) {
+        File pomFile = model.getPomFile();
+
         String groupId = model.getGroupId();
         if (groupId == null) {
             if (model.getParent() != null) {
@@ -97,9 +103,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             }
         }
         
-        //TODO: method to long
-        
-        WorkspaceArtifact wsArtifact = new WorkspaceArtifact(pomFile, groupId, model.getArtifactId(), version);
+        MavenModule wsArtifact = new MavenModule(pomFile, groupId, model.getArtifactId(), version);
         wsArtifact.setInsertVersionTag(insertVersionTag);
         wsArtifact.setVersionLocation(getVersionLocation(model));
         
@@ -112,7 +116,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
 
         // Dependencies
         for (Dependency dependency : model.getDependencies()) {            
-            wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+            wsArtifact.getDependencies().add(new MavenModuleDependency(
                     getVersionLocation(dependency), 
                     new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
         }
@@ -120,12 +124,12 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         // Plugins
         if (model.getBuild() != null) {
             for (Plugin plugin : model.getBuild().getPlugins()) {                
-                wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+                wsArtifact.getDependencies().add(new MavenModuleDependency(
                         getVersionLocation(plugin), 
                         new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
                 
                 for (Dependency dependency : plugin.getDependencies()) {                    
-                    wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+                    wsArtifact.getDependencies().add(new MavenModuleDependency(
                             getVersionLocation(dependency), 
                             new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
                 }
@@ -135,7 +139,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         // Profile Dependencies
         for (Profile profile : model.getProfiles()) {
             for (Dependency dependency : profile.getDependencies()) {                                 
-                wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+                wsArtifact.getDependencies().add(new MavenModuleDependency(
                         getVersionLocation(dependency),  
                         new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
             }
@@ -145,13 +149,13 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         for (Profile profile : model.getProfiles()) {
             if (profile.getBuild() != null) {
                 for (Plugin plugin : profile.getBuild().getPlugins()) {                
-                    wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+                    wsArtifact.getDependencies().add(new MavenModuleDependency(
                             getVersionLocation(plugin), 
                             new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
                          
 
                     for (Dependency dependency : plugin.getDependencies()) {                        
-                        wsArtifact.getDependencies().add(new WorkspaceArtifactDependency(
+                        wsArtifact.getDependencies().add(new MavenModuleDependency(
                                 getVersionLocation(dependency),  
                                 new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
                     }
@@ -172,29 +176,29 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
     }
 
     @Override
-    public void updateArtifact(WorkspaceArtifact workspaceArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
-        if (!workspaceArtifact.isDirty()) {
+    public void updateArtifact(MavenModule mavenModule, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
+        if (!mavenModule.isDirty()) {
             return;
         }
         
         List<PomUpdateCommand> commands = new ArrayList<MavenPomHandlerDefaultImpl.PomUpdateCommand>();
                 
-        addUpdateCommand(workspaceArtifact, workspaceArtifact.getVersionLocation(), false, dependencyUpdateStrategy, commands);
+        addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, dependencyUpdateStrategy, commands);
         
-        if (workspaceArtifact.getParent() != null && workspaceArtifact.getParent() instanceof WorkspaceArtifact) {
-            addUpdateCommand((WorkspaceArtifact) workspaceArtifact.getParent(), workspaceArtifact.getParentVersionLocation(), true, dependencyUpdateStrategy, commands);           
+        if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
+            addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, dependencyUpdateStrategy, commands);
         }
         
-        for (WorkspaceArtifactDependency dependency : workspaceArtifact.getDependencies()) {
-            if (dependency.getArtifact() instanceof WorkspaceArtifact) {
-                addUpdateCommand((WorkspaceArtifact) dependency.getArtifact(), dependency.getVersionLocation(), true, dependencyUpdateStrategy, commands);
+        for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
+            if (dependency.getArtifact() instanceof MavenModule) {
+                addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, dependencyUpdateStrategy, commands);
             }
         }
         
-        executeUpdateCommands(commands, workspaceArtifact.getPomFile());
+        executeUpdateCommands(commands, mavenModule.getPomFile());
     }
     
-    private void addUpdateCommand(WorkspaceArtifact wsArtifact, Integer lineNumber, boolean dependency, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy, List<PomUpdateCommand> commands) {
+    private void addUpdateCommand(MavenModule wsArtifact, Integer lineNumber, boolean dependency, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy, List<PomUpdateCommand> commands) {
         if (!wsArtifact.isDirty()) {
             return;
         }
@@ -203,7 +207,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             return;
         }
         
-        if (dependency && !checkDependecyShallBeUpdated(wsArtifact, dependencyUpdateStrategy)) {
+        if (dependency && !checkDependencyShallBeUpdated(wsArtifact, dependencyUpdateStrategy)) {
             LOG.info("Don't update dependency {}:{} because update strategy is not satisfied: Current version: {}, new version: {}",
                     new Object[] { wsArtifact.getGroupId(), wsArtifact.getArtifactId(), wsArtifact.getVersion(), wsArtifact.getNewVersion() });
             return;
@@ -216,21 +220,15 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         }
     }
     
-    private boolean checkDependecyShallBeUpdated(WorkspaceArtifact wsArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
+    private boolean checkDependencyShallBeUpdated(MavenModule wsArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
         String[] versionParts = wsArtifact.getVersion().split("[\\.-]");
         String[] newVersionParts = wsArtifact.getNewVersion().split("[\\.-]");
         
         switch (dependencyUpdateStrategy) {
         case SAME_MAJOR:
-            if (versionParts.length > 0 && versionParts[0].equals(newVersionParts[0])) {
-                return true;
-            }
-            return false;
+            return versionParts.length > 0 && versionParts[0].equals(newVersionParts[0]);
         case SAME_MAJOR_MINOR:
-            if (versionParts.length > 1 && versionParts[0].equals(newVersionParts[0]) && versionParts[1].equals(newVersionParts[1])) {
-                return true;
-            }
-            return false;
+            return versionParts.length > 1 && versionParts[0].equals(newVersionParts[0]) && versionParts[1].equals(newVersionParts[1]);
         case SAME_BASE_VERSION:
             return wsArtifact.getVersion().startsWith(wsArtifact.getBaseVersion());
         default:
@@ -253,7 +251,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
 
             LOG.debug("Writing temporary POM file to: {}", tempTarget.getAbsoluteFile());
 
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null) {
                 PomUpdateCommand command = commandMap.get(reader.getLineNumber());
                 if (command != null) {

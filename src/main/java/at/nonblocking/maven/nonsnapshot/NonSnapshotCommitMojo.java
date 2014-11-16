@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.maven.plugins.annotations.Mojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,24 +32,23 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
  * Goal to commit changed POM files if the updateVersions goal was called with deferPomCommit = true 
  * 
  * @author Juergen Kofler
- * 
- * @goal commitVersions
  */
+@Mojo(name = "commitVersions", aggregator = true)
 public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
 
     private static Logger LOG = LoggerFactory.getLogger(NonSnapshotCommitMojo.class);
 
     @Override
     protected void internalExecute() {
-        File pomsToCommitFile = new File(getWorkspaceDir(), POMS_TO_COMMIT_TEXT_FILE);
-        LOG.debug("Reading POM files to commit from: {}", pomsToCommitFile.getAbsolutePath());
+        File dirtyModulesRegistryFile = getDirtyModulesRegistryFile();
+        LOG.debug("Reading POM files to commit from: {}", dirtyModulesRegistryFile.getAbsolutePath());
         
-        if (!pomsToCommitFile.exists()) {
-            LOG.info("File {} does not exist. Doing nothing.", pomsToCommitFile.getAbsolutePath());
+        if (!dirtyModulesRegistryFile.exists()) {
+            LOG.info("File {} does not exist. Doing nothing.", dirtyModulesRegistryFile.getAbsolutePath());
             return;
         }
 
-        List<File> pomsToCommit = readPomFileList(pomsToCommitFile);
+        List<File> pomsToCommit = readPomFileList(dirtyModulesRegistryFile);
         if (pomsToCommit.size() == 0) {
             return;
         }
@@ -67,13 +67,14 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
 
     private List<File> readPomFileList(File inputFile) {
         List<File> pomFileList = new ArrayList<File>();
+        File baseDir = getMavenProject().getBasedir();
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null) {
-                File pom = new File(line);
+                File pom = new File(baseDir, line + "/pom.xml");
                 if (!pomFileList.contains(pom)) {
                     pomFileList.add(pom);
                 }
@@ -87,7 +88,7 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
             return pomFileList;
 
         } catch (IOException e) {
-            throw new NonSnapshotPluginException("Failed to write text file with POMs to commit!", e);
+            throw new NonSnapshotPluginException("Failed to read dirty modules registry file!", e);
         }
     }
 }

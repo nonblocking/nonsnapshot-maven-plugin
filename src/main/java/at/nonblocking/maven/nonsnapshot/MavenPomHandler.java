@@ -17,7 +17,8 @@ package at.nonblocking.maven.nonsnapshot;
 
 import java.io.File;
 
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import org.apache.maven.model.Model;
 
 /**
  * Handler for Maven POM access and modification.
@@ -26,13 +27,22 @@ import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
  */
 public interface MavenPomHandler {
 
+
+    /**
+     * Convert given POM model to a WorkspaceArtifact object.
+     *
+     * @param model Model
+     * @return WorkspaceArtifact
+     */
+    MavenModule readArtifact(Model model);
+
     /**
      * Read the POM model from given file and return a completely filled WorkspaceArtifact object. 
      * 
      * @param pomFile File
      * @return WorkspaceArtifact
      */
-    WorkspaceArtifact readArtifact(File pomFile);
+    MavenModule readArtifact(File pomFile);
 
     /**
      * Update the project version and all the versions of dirty dependencies.
@@ -40,6 +50,6 @@ public interface MavenPomHandler {
      * @param workspaceArtifact WorkspaceArtifact
      * @param dependencyUpdateStrategy DEPENDENCY_UPDATE_STRATEGY 
      */
-    void updateArtifact(WorkspaceArtifact workspaceArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy);
+    void updateArtifact(MavenModule workspaceArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy);
 
 }

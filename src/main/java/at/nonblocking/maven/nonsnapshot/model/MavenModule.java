@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a Maven project with the Workspace
+ * Represents a Maven module in the build tree
  * 
  * @author Juergen Kofler
  */
-public class WorkspaceArtifact extends MavenArtifact {
+public class MavenModule extends MavenArtifact {
 
     private File pomFile;
 
@@ -34,16 +34,16 @@ public class WorkspaceArtifact extends MavenArtifact {
     private MavenArtifact parent;
     private int parentVersionLocation;
 
-    private List<WorkspaceArtifact> children = new ArrayList<WorkspaceArtifact>();
+    private List<MavenModule> children = new ArrayList<MavenModule>();
 
-    private List<WorkspaceArtifactDependency> dependencies = new ArrayList<WorkspaceArtifactDependency>();
+    private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
 
     private String baseVersion;
     private String nextRevisionId;
 
     private boolean dirty;
 
-    public WorkspaceArtifact(File pomFile, String groupId, String artifactId, String version) {
+    public MavenModule(File pomFile, String groupId, String artifactId, String version) {
         super(groupId, artifactId, version);
         this.pomFile = pomFile;
     }
@@ -112,11 +112,11 @@ public class WorkspaceArtifact extends MavenArtifact {
         this.dirty = dirty;
     }
 
-    public List<WorkspaceArtifact> getChildren() {
+    public List<MavenModule> getChildren() {
         return children;
     }
 
-    public List<WorkspaceArtifactDependency> getDependencies() {
+    public List<MavenModuleDependency> getDependencies() {
         return dependencies;
     }
 

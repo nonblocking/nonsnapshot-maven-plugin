@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
+import org.apache.maven.project.MavenProject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,7 +16,7 @@ import org.slf4j.impl.StaticLoggerBinder;
 public class NonSnapshotCommitMojoTest {
 
     private NonSnapshotCommitMojo nonSnapshotMojo = new NonSnapshotCommitMojo();
-    private WorkspaceTraverser mockWorkspaceTraverser = mock(WorkspaceTraverser.class);
+    private ModuleTraverser mockModuleTraverser = mock(ModuleTraverser.class);
     private DependencyTreeProcessor mockDependencyTreeProcessor = mock(DependencyTreeProcessor.class);
     private MavenPomHandler mockMavenPomHandler = mock(MavenPomHandler.class);
     private ScmHandler mockScmHandler = mock(ScmHandler.class);
@@ -27,11 +28,14 @@ public class NonSnapshotCommitMojoTest {
     
     @Before
     public void setupMojo() {
-        this.nonSnapshotMojo.setWorkspaceDir(new File("target"));
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setFile(new File("target/pom.xml"));
+        this.nonSnapshotMojo.setMavenProject(mavenProject);
+
         this.nonSnapshotMojo.setScmUser("foo");
         this.nonSnapshotMojo.setScmPassword("bar");
         this.nonSnapshotMojo.setDeferPomCommit(false);
-        this.nonSnapshotMojo.setWorkspaceTraverser(this.mockWorkspaceTraverser);
+        this.nonSnapshotMojo.setModuleTraverser(this.mockModuleTraverser);
         this.nonSnapshotMojo.setDependencyTreeProcessor(this.mockDependencyTreeProcessor);
         this.nonSnapshotMojo.setMavenPomHandler(this.mockMavenPomHandler);
         this.nonSnapshotMojo.setScmHandler(this.mockScmHandler);
@@ -40,15 +44,15 @@ public class NonSnapshotCommitMojoTest {
 
     @Test
     public void testCommit() throws Exception {
-        File pomFilesToCommit = new File("target/nonSnapshotPomsToCommit.txt");
-        File pom1 = new File("test1/pom.xml");
-        File pom2 = new File("test2/pom.xml");
-        File pom3 = new File("test3/pom.xml");
+        File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
+        File pom1 = new File("target/test1/pom.xml");
+        File pom2 = new File("target/test2/pom.xml");
+        File pom3 = new File("target/test3/pom.xml");
 
         PrintWriter writer = new PrintWriter(pomFilesToCommit);
-        writer.write(pom1.getPath() + System.getProperty("line.separator"));
-        writer.write(pom2.getPath() + System.getProperty("line.separator"));
-        writer.write(pom3.getPath() + System.getProperty("line.separator"));
+        writer.write("test1" + System.getProperty("line.separator"));
+        writer.write("test2" + System.getProperty("line.separator"));
+        writer.write("test3" + System.getProperty("line.separator"));
         writer.close();
 
         this.nonSnapshotMojo.execute();
@@ -60,16 +64,16 @@ public class NonSnapshotCommitMojoTest {
     
     @Test
     public void testCommitIgnoreDuplicateEntries() throws Exception {
-        File pomFilesToCommit = new File("target/nonSnapshotPomsToCommit.txt");
-        File pom1 = new File("test1/pom.xml");
-        File pom2 = new File("test2/pom.xml");
-        File pom3 = new File("test3/pom.xml");
+        File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
+        File pom1 = new File("target/test1/pom.xml");
+        File pom2 = new File("target/test2/pom.xml");
+        File pom3 = new File("target/test3/pom.xml");
         
         PrintWriter writer = new PrintWriter(pomFilesToCommit);
-        writer.write(pom1.getPath() + System.getProperty("line.separator"));
-        writer.write(pom2.getPath() + System.getProperty("line.separator"));
-        writer.write(pom3.getPath() + System.getProperty("line.separator"));
-        writer.write(pom2.getPath() + System.getProperty("line.separator"));
+        writer.write("test1" + System.getProperty("line.separator"));
+        writer.write("test2" + System.getProperty("line.separator"));
+        writer.write("test3" + System.getProperty("line.separator"));
+        writer.write("test2" + System.getProperty("line.separator"));
         writer.close();
 
         this.nonSnapshotMojo.execute();
@@ -81,8 +85,8 @@ public class NonSnapshotCommitMojoTest {
     
     @Test
     public void testDontFailOnCommitTrue() throws Exception {
-        File pomFilesToCommit = new File("target/nonSnapshotPomsToCommit.txt");
-        File pom1 = new File("test1/pom.xml");
+        File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
+        File pom1 = new File("target/test1/pom.xml");
 
         PrintWriter writer = new PrintWriter(pomFilesToCommit);
         writer.write(pom1.getPath() + System.getProperty("line.separator"));
@@ -97,8 +101,8 @@ public class NonSnapshotCommitMojoTest {
     
     @Test(expected = RuntimeException.class)
     public void testDontFailOnCommitFalse() throws Exception {
-        File pomFilesToCommit = new File("target/nonSnapshotPomsToCommit.txt");
-        File pom1 = new File("test1/pom.xml");
+        File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
+        File pom1 = new File("target/test1/pom.xml");
 
         PrintWriter writer = new PrintWriter(pomFilesToCommit);
         writer.write(pom1.getPath() + System.getProperty("line.separator"));

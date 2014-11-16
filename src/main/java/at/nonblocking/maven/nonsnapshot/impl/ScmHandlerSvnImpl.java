@@ -98,7 +98,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
         this.cachedNextRevision = null;
 
         try {
-            SVNCommitInfo info = this.svnClientManager.getCommitClient().doCommit(files.toArray(new File[0]), false, commitMessage, 
+            SVNCommitInfo info = this.svnClientManager.getCommitClient().doCommit(files.toArray(new File[files.size()]), false, commitMessage,
                     null, null, false, false, SVNDepth.FILES);
 
             if (info.getErrorMessage() != null) {

@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.impl.MavenPomHandlerDefaultImpl;
-import at.nonblocking.maven.nonsnapshot.model.WorkspaceArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
 public class MavenPomHandlerDefaultImplTest {
 
@@ -31,7 +31,7 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         assertEquals("at.nonblocking", wsArtifact.getGroupId());
         assertEquals("test1", wsArtifact.getArtifactId());
@@ -56,7 +56,7 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         assertEquals("at.nonblocking", wsArtifact.getGroupId());
         assertEquals("test1", wsArtifact.getArtifactId());
@@ -75,13 +75,13 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact dependentArtifact = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "2.0.5-123");
+        MavenModule dependentArtifact = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact.setDirty(true);
         dependentArtifact.setBaseVersion("5.0.1");
         dependentArtifact.setNextRevisionId("555");
@@ -103,18 +103,18 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact dependentArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.1.1-123");
+        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
         dependentArtifact1.setDirty(true);
         dependentArtifact1.setBaseVersion("5.0.1");
         dependentArtifact1.setNextRevisionId("555");
         
-        WorkspaceArtifact dependentArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "2.0.5-123");
+        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact2.setDirty(true);
         dependentArtifact2.setBaseVersion("2.4.5");
         dependentArtifact2.setNextRevisionId("555");
@@ -138,18 +138,18 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact dependentArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.1.1-123");
+        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
         dependentArtifact1.setDirty(true);
         dependentArtifact1.setBaseVersion("1.2.2");
         dependentArtifact1.setNextRevisionId("555");
         
-        WorkspaceArtifact dependentArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "2.0.5-123");
+        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact2.setDirty(true);
         dependentArtifact2.setBaseVersion("2.0.11");
         dependentArtifact2.setNextRevisionId("555");
@@ -173,18 +173,18 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact dependentArtifact1 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "1.1.1-123");
+        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
         dependentArtifact1.setDirty(true);
         dependentArtifact1.setBaseVersion("1.1.2");
         dependentArtifact1.setNextRevisionId("555");
         
-        WorkspaceArtifact dependentArtifact2 = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "2.0.5-123");
+        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact2.setDirty(true);
         dependentArtifact2.setBaseVersion("2.0.5");
         dependentArtifact2.setNextRevisionId("555");
@@ -208,13 +208,13 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact parentArtifact = new WorkspaceArtifact(null, "at.nonblocking.at", "parent-test", "1.4.5-123");
+        MavenModule parentArtifact = new MavenModule(null, "at.nonblocking.at", "parent-test", "1.4.5-123");
         parentArtifact.setDirty(true);
         parentArtifact.setBaseVersion("3.3.3");
         parentArtifact.setNextRevisionId("456");
@@ -236,7 +236,7 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         assertNotNull(wsArtifact.getVersion());
         assertTrue(wsArtifact.isInsertVersionTag());
@@ -259,13 +259,13 @@ public class MavenPomHandlerDefaultImplTest {
 
         MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
         
-        WorkspaceArtifact wsArtifact = pomHandler.readArtifact(pomFile);
+        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
         wsArtifact.setBaseVersion("1.1.1");
         wsArtifact.setNextRevisionId("12345");
         
-        WorkspaceArtifact dependentArtifact = new WorkspaceArtifact(null, "at.nonblocking.at", "test2", "2.0.5-123");
+        MavenModule dependentArtifact = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact.setDirty(true);
         dependentArtifact.setBaseVersion("5.0.1");
         dependentArtifact.setNextRevisionId("555");

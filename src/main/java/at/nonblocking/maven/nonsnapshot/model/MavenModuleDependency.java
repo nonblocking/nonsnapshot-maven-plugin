@@ -17,16 +17,16 @@ package at.nonblocking.maven.nonsnapshot.model;
 
 
 /**
- * A dependency of a Workspace artifact.
+ * A dependency of a Maven module
  * 
  * @author Juergen Kofler
  */
-public class WorkspaceArtifactDependency {
+public class MavenModuleDependency {
 
     private int versionLocation;
     private MavenArtifact artifact;
 
-    public WorkspaceArtifactDependency(int versionLocation, MavenArtifact artifact) {
+    public MavenModuleDependency(int versionLocation, MavenArtifact artifact) {
         this.versionLocation = versionLocation;
         this.artifact = artifact;
     }
