@@ -72,9 +72,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             model.setPomFile(pomFile);
             return readArtifact(model);
 
-        } catch (IOException e) {
-            throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
-        } catch (XmlPullParserException e) {
+        } catch (IOException | XmlPullParserException e) {
             throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
         }
     }
@@ -181,7 +179,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             return;
         }
         
-        List<PomUpdateCommand> commands = new ArrayList<MavenPomHandlerDefaultImpl.PomUpdateCommand>();
+        List<PomUpdateCommand> commands = new ArrayList<>();
                 
         addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, commands);
         
@@ -221,7 +219,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
     }
 
     private void executeUpdateCommands(List<PomUpdateCommand> commands, File pomFile) {
-        Map<Integer, PomUpdateCommand> commandMap = new HashMap<Integer, PomUpdateCommand>();
+        Map<Integer, PomUpdateCommand> commandMap = new HashMap<>();
 
         for (PomUpdateCommand command : commands) {
             commandMap.put(command.lineNumber, command);

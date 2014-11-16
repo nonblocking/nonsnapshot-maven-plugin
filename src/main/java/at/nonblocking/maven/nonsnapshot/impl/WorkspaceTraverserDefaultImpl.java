@@ -41,7 +41,7 @@ public class WorkspaceTraverserDefaultImpl implements WorkspaceTraverser {
     
     @Override
     public List<File> findAllPomFiles(File workspaceDir, List<String> excludeFolders) {
-        List<File> pomFiles = new ArrayList<File>();
+        List<File> pomFiles = new ArrayList<>();
         
         for (File dir : workspaceDir.listFiles(new DirectoryFilter(excludeFolders))) {
             gatherPomFiles(dir, pomFiles);
@@ -64,7 +64,7 @@ public class WorkspaceTraverserDefaultImpl implements WorkspaceTraverser {
     
     private static class DirectoryFilter implements FileFilter {
 
-        private List<String> excludes = new ArrayList<String>();
+        private List<String> excludes = new ArrayList<>();
         
         DirectoryFilter(List<String> excludeFolders) {
             if (excludeFolders != null) {

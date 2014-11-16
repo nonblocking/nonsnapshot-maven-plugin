@@ -66,7 +66,7 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
     }
 
     private List<File> readPomFileList(File inputFile) {
-        List<File> pomFileList = new ArrayList<File>();
+        List<File> pomFileList = new ArrayList<>();
         File baseDir = getMavenProject().getBasedir();
 
         try {

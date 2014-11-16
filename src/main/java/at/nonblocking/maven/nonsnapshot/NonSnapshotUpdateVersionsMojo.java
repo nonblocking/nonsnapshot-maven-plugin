@@ -72,7 +72,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         List<Model> mavenModels = getModuleTraverser().findAllModules(getMavenProject());
 
-        List<MavenModule> mavenModules = new ArrayList<MavenModule>();
+        List<MavenModule> mavenModules = new ArrayList<>();
 
         for (Model model : mavenModels) {
             MavenModule artifact = getMavenPomHandler().readArtifact(model);
@@ -101,7 +101,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     }
 
     protected void writeAndCommitArtifacts(List<MavenModule> mavenModules) {
-        List<File> pomsToCommit = new ArrayList<File>();
+        List<File> pomsToCommit = new ArrayList<>();
 
         for (MavenModule mavenModule : mavenModules) {
             if (mavenModule.isDirty() && mavenModule.getNewVersion() != null) {

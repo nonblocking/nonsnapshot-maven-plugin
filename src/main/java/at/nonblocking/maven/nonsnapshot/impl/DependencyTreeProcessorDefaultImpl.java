@@ -42,7 +42,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     
     @Override
     public List<MavenModule> buildDependencyTree(List<MavenModule> artifacts) {
-        List<MavenModule> rootArtifacts = new ArrayList<MavenModule>();
+        List<MavenModule> rootArtifacts = new ArrayList<>();
 
         for (MavenModule wsArtifact : artifacts) {
             if (wsArtifact.getParent() != null) {
