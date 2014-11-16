@@ -112,9 +112,10 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         }
 
         if (pomsToCommit.size() > 0) {
-            File dirtyModulesRegistryFile = getDirtyModulesRegistryFile();
-            LOG.debug("Writing dirty modules registry to: {}", dirtyModulesRegistryFile.getAbsolutePath());
-            writeDirtyModulesRegistry(pomsToCommit, dirtyModulesRegistryFile);
+            writeDirtyModulesRegistry(pomsToCommit);
+            if (isGenerateIncrementalBuildScripts()) {
+                generateIncrementalBuildScripts(pomsToCommit);
+            }
 
             if (!isDeferPomCommit()) {
                 LOG.info("Committing {} POM files", pomsToCommit.size());
@@ -123,7 +124,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 LOG.info("Deferring the POM commit. Execute nonsnapshot:commit to actually commit the changes.");
             }
         } else {
-            LOG.info("Workspace is up-to-date. No versions updated.");
+            LOG.info("Modules are up-to-date. No versions updated.");
         }
     }
 
@@ -233,22 +234,25 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         }
     }
 
-    private void setNextRevisionOnDirtyArtifacts(List<MavenModule> workspaceArtifacts) {
-        for (MavenModule artifact : workspaceArtifacts) {
-            File artifactPath = artifact.getPomFile().getParentFile();  
+    private void setNextRevisionOnDirtyArtifacts(List<MavenModule> mavenModules) {
+        for (MavenModule mavenModule : mavenModules) {
+            File artifactPath = mavenModule.getPomFile().getParentFile();
                     
-            if (artifact.isDirty() && getScmHandler().isWorkingCopy(artifactPath)) {
+            if (mavenModule.isDirty() && getScmHandler().isWorkingCopy(artifactPath)) {
                 if (!isUseTimestampQualifier()) {
-                    artifact.setNewVersion(getBaseVersion() + "-" + getScmHandler().getNextRevisionId(artifactPath));
+                    mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getNextRevisionId(artifactPath));
                 } else {
-                    artifact.setNewVersion(getBaseVersion() + "-" + this.timestamp);
+                    mavenModule.setNewVersion(getBaseVersion() + "-" + this.timestamp);
                 }
             }
         }
     }
 
-    private void writeDirtyModulesRegistry(List<File> pomFileList, File outputFile) {
-        try (PrintWriter writer = new PrintWriter(new FileOutputStream(outputFile, false))) {
+    private void writeDirtyModulesRegistry(List<File> pomFileList) {
+        File dirtyModulesRegistryFile = getDirtyModulesRegistryFile();
+        LOG.info("Writing dirty modules registry to: {}", dirtyModulesRegistryFile.getAbsolutePath());
+
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(dirtyModulesRegistryFile, false))) {
 
             Path basePath = Paths.get(getMavenProject().getBasedir().getCanonicalPath());
 
@@ -265,6 +269,14 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         } catch (IOException e) {
             throw new NonSnapshotPluginException("Failed to write text file with POMs to commit!", e);
         }
+    }
+
+    private void generateIncrementalBuildScripts(List<File> pomFileList) {
+
+        LOG.info("!!!!!!!!! sdklfjdslfk");
+
+        //TODO
+
     }
 
     private void setTimestamp() {

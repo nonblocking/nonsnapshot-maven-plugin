@@ -101,20 +101,20 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             }
         }
         
-        MavenModule wsArtifact = new MavenModule(pomFile, groupId, model.getArtifactId(), version);
-        wsArtifact.setInsertVersionTag(insertVersionTag);
-        wsArtifact.setVersionLocation(getVersionLocation(model));
+        MavenModule mavenModule = new MavenModule(pomFile, groupId, model.getArtifactId(), version);
+        mavenModule.setInsertVersionTag(insertVersionTag);
+        mavenModule.setVersionLocation(getVersionLocation(model));
         
         // Parent
         if (model.getParent() != null) {            
-            wsArtifact.setParent(new MavenArtifact(model.getParent().getGroupId(), 
-                    model.getParent().getArtifactId(), model.getParent().getVersion()));            
-            wsArtifact.setParentVersionLocation(getVersionLocation(model.getParent()));
+            mavenModule.setParent(new MavenArtifact(model.getParent().getGroupId(),
+                model.getParent().getArtifactId(), model.getParent().getVersion()));
+            mavenModule.setParentVersionLocation(getVersionLocation(model.getParent()));
         }
 
         // Dependencies
         for (Dependency dependency : model.getDependencies()) {            
-            wsArtifact.getDependencies().add(new MavenModuleDependency(
+            mavenModule.getDependencies().add(new MavenModuleDependency(
                     getVersionLocation(dependency), 
                     new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
         }
@@ -122,12 +122,12 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         // Plugins
         if (model.getBuild() != null) {
             for (Plugin plugin : model.getBuild().getPlugins()) {                
-                wsArtifact.getDependencies().add(new MavenModuleDependency(
+                mavenModule.getDependencies().add(new MavenModuleDependency(
                         getVersionLocation(plugin), 
                         new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
                 
                 for (Dependency dependency : plugin.getDependencies()) {                    
-                    wsArtifact.getDependencies().add(new MavenModuleDependency(
+                    mavenModule.getDependencies().add(new MavenModuleDependency(
                             getVersionLocation(dependency), 
                             new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
                 }
@@ -137,7 +137,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         // Profile Dependencies
         for (Profile profile : model.getProfiles()) {
             for (Dependency dependency : profile.getDependencies()) {                                 
-                wsArtifact.getDependencies().add(new MavenModuleDependency(
+                mavenModule.getDependencies().add(new MavenModuleDependency(
                         getVersionLocation(dependency),  
                         new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
             }
@@ -147,13 +147,13 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
         for (Profile profile : model.getProfiles()) {
             if (profile.getBuild() != null) {
                 for (Plugin plugin : profile.getBuild().getPlugins()) {                
-                    wsArtifact.getDependencies().add(new MavenModuleDependency(
+                    mavenModule.getDependencies().add(new MavenModuleDependency(
                             getVersionLocation(plugin), 
                             new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
                          
 
                     for (Dependency dependency : plugin.getDependencies()) {                        
-                        wsArtifact.getDependencies().add(new MavenModuleDependency(
+                        mavenModule.getDependencies().add(new MavenModuleDependency(
                                 getVersionLocation(dependency),  
                                 new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
                     }
@@ -161,7 +161,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             }
         }
 
-        return wsArtifact;
+        return mavenModule;
     }
     
     private int getVersionLocation(InputLocationTracker tracker) {

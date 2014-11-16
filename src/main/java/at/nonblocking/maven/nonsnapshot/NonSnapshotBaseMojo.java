@@ -109,7 +109,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
      * Generate a shell script to incrementally build only dirty artifacts (Maven > 3.2.1 only)
      */
     @Parameter(defaultValue = "false")
-    private boolean generateScriptForIncrementalBuild;
+    private boolean generateIncrementalBuildScripts;
 
     /**
      * Disable this plugin
@@ -299,6 +299,10 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
     public String getTimestampQualifierPattern() {
         return timestampQualifierPattern;
+    }
+
+    public boolean isGenerateIncrementalBuildScripts() {
+        return generateIncrementalBuildScripts;
     }
 }
 

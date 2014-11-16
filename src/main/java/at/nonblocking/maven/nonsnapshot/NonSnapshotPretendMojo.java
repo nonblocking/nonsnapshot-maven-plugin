@@ -34,15 +34,15 @@ public class NonSnapshotPretendMojo extends NonSnapshotUpdateVersionsMojo {
     private static Logger LOG = LoggerFactory.getLogger(NonSnapshotPretendMojo.class);
 
     @Override
-    protected void writeAndCommitArtifacts(List<MavenModule> workspaceArtifacts) {
+    protected void writeAndCommitArtifacts(List<MavenModule> mavenModules) {
        int dirtyCount = 0;
-       for (MavenModule artifact : workspaceArtifacts) {
-           if (artifact.isDirty()) {
+       for (MavenModule mavenModule : mavenModules) {
+           if (mavenModule.isDirty()) {
                dirtyCount ++;
            }
        }
         
-       LOG.info("Artifacts in Workspace: {}, thereof about to be updated: {}", workspaceArtifacts.size(), dirtyCount);
+       LOG.info("Artifacts in Workspace: {}, thereof about to be updated: {}", mavenModules.size(), dirtyCount);
        LOG.info("NonSnapshot Plugin is in pretend mode. Doing nothing.");
     }
   
