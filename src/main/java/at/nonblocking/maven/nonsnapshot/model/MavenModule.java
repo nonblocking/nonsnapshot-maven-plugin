@@ -38,8 +38,7 @@ public class MavenModule extends MavenArtifact {
 
     private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
 
-    private String baseVersion;
-    private String nextRevisionId;
+    private String newVersion;
 
     private boolean dirty;
 
@@ -88,22 +87,6 @@ public class MavenModule extends MavenArtifact {
         this.parent = parent;
     }
 
-    public String getBaseVersion() {
-        return baseVersion;
-    }
-
-    public void setBaseVersion(String baseVersion) {
-        this.baseVersion = baseVersion;
-    }
-
-    public String getNextRevisionId() {
-        return nextRevisionId;
-    }
-
-    public void setNextRevisionId(String nextRevisionId) {
-        this.nextRevisionId = nextRevisionId;
-    }
-
     public boolean isDirty() {
         return dirty;
     }
@@ -121,11 +104,10 @@ public class MavenModule extends MavenArtifact {
     }
 
     public String getNewVersion() {
-        if (this.baseVersion == null || this.nextRevisionId == null) {
-            return null;
-        }
-        
-        return this.baseVersion + "-" + this.nextRevisionId;
+        return newVersion;
     }
-    
+
+    public void setNewVersion(String newVersion) {
+        this.newVersion = newVersion;
+    }
 }

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputLocationTracker;
@@ -41,7 +42,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.nonblocking.maven.nonsnapshot.DEPENDENCY_UPDATE_STRATEGY;
 import at.nonblocking.maven.nonsnapshot.MavenPomHandler;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
@@ -176,65 +176,48 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
     }
 
     @Override
-    public void updateArtifact(MavenModule mavenModule, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
+    public void updateArtifact(MavenModule mavenModule) {
         if (!mavenModule.isDirty()) {
             return;
         }
         
         List<PomUpdateCommand> commands = new ArrayList<MavenPomHandlerDefaultImpl.PomUpdateCommand>();
                 
-        addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, dependencyUpdateStrategy, commands);
+        addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, commands);
         
         if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
-            addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, dependencyUpdateStrategy, commands);
+            addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, commands);
         }
         
         for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
             if (dependency.getArtifact() instanceof MavenModule) {
-                addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, dependencyUpdateStrategy, commands);
+                addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, commands);
+            } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
+                addUpdateCommand((UpstreamMavenArtifact) dependency.getArtifact(), dependency.getVersionLocation(), commands);
             }
         }
         
         executeUpdateCommands(commands, mavenModule.getPomFile());
     }
     
-    private void addUpdateCommand(MavenModule wsArtifact, Integer lineNumber, boolean dependency, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy, List<PomUpdateCommand> commands) {
-        if (!wsArtifact.isDirty()) {
+    private void addUpdateCommand(MavenModule mavenModule, Integer lineNumber, boolean dependency, List<PomUpdateCommand> commands) {
+        if (!mavenModule.isDirty()) {
             return;
         }
-        if (wsArtifact.getNewVersion() == null) {
-            LOG.warn("New version for artifact {}:{} not set, cannot update version!", wsArtifact.getGroupId(), wsArtifact.getArtifactId());
+        if (mavenModule.getNewVersion() == null) {
+            LOG.warn("New version for artifact {}:{} not set, cannot update version!", mavenModule.getGroupId(), mavenModule.getArtifactId());
             return;
         }
-        
-        if (dependency && !checkDependencyShallBeUpdated(wsArtifact, dependencyUpdateStrategy)) {
-            LOG.info("Don't update dependency {}:{} because update strategy is not satisfied: Current version: {}, new version: {}",
-                    new Object[] { wsArtifact.getGroupId(), wsArtifact.getArtifactId(), wsArtifact.getVersion(), wsArtifact.getNewVersion() });
-            return;
-        }
-        
-        if (!dependency && wsArtifact.isInsertVersionTag()) {
-            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.INSERT, "<version>" + wsArtifact.getNewVersion() + "</version>", null));            
-        } else {            
-            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + wsArtifact.getNewVersion() + "</version>"));
+
+        if (!dependency && mavenModule.isInsertVersionTag()) {
+            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.INSERT, "<version>" + mavenModule.getNewVersion() + "</version>", null));
+        } else {
+            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + mavenModule.getNewVersion() + "</version>"));
         }
     }
-    
-    private boolean checkDependencyShallBeUpdated(MavenModule wsArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
-        String[] versionParts = wsArtifact.getVersion().split("[\\.-]");
-        String[] newVersionParts = wsArtifact.getNewVersion().split("[\\.-]");
-        
-        switch (dependencyUpdateStrategy) {
-        case SAME_MAJOR:
-            return versionParts.length > 0 && versionParts[0].equals(newVersionParts[0]);
-        case SAME_MAJOR_MINOR:
-            return versionParts.length > 1 && versionParts[0].equals(newVersionParts[0]) && versionParts[1].equals(newVersionParts[1]);
-        case SAME_BASE_VERSION:
-            return wsArtifact.getVersion().startsWith(wsArtifact.getBaseVersion());
-        default:
-        case ALWAYS: 
-            return true;
-        }        
+
+    private void addUpdateCommand(UpstreamMavenArtifact upstreamMavenArtifact, Integer lineNumber, List<PomUpdateCommand> commands) {
+        commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + upstreamMavenArtifact.getNewVersion() + "</version>"));
     }
 
     private void executeUpdateCommands(List<PomUpdateCommand> commands, File pomFile) {

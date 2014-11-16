@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
@@ -77,22 +78,6 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
     }
 
     @Override
-    public void applyBaseVersions(List<MavenModule> rootArtifacts, String baseVersion) {
-        for (MavenModule rootArtifact : rootArtifacts) {
-            applyBaseVersions(rootArtifact, baseVersion);
-        }       
-    }
-
-    private void applyBaseVersions(MavenModule artifact, String baseVersion) {
-        LOG.debug("Applying base version '{}' to artifact {}:{}", new Object[] { baseVersion, artifact.getGroupId(), artifact.getArtifactId() });
-        artifact.setBaseVersion(baseVersion);
-
-        for (MavenModule child : artifact.getChildren()) {
-            applyBaseVersions(child, baseVersion);
-        }
-    }
-
-    @Override
     public boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts) {
         boolean changes = false;
         
@@ -117,6 +102,15 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                     if (dependencyWsArtifact.isDirty()) {
                         LOG.debug("Marking artifact {}:{} dirty because dependency is dirty: {}:{}", 
                                 new Object[] { artifact.getGroupId(), artifact.getArtifactId(), dependencyWsArtifact.getGroupId(), dependencyWsArtifact.getArtifactId() });
+                        artifact.setDirty(true);
+                        changes = true;
+                        break;
+                    }
+                } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
+                    UpstreamMavenArtifact upstreamDependency = (UpstreamMavenArtifact) dependency.getArtifact();
+                    if (upstreamDependency.isDirty()) {
+                        LOG.debug("Marking artifact {}:{} dirty because upstream dependency is dirty: {}:{}",
+                            new Object[] { artifact.getGroupId(), artifact.getArtifactId(), upstreamDependency.getGroupId(), upstreamDependency.getArtifactId() });
                         artifact.setDirty(true);
                         changes = true;
                         break;

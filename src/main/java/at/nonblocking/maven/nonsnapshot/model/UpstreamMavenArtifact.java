@@ -26,10 +26,12 @@ import java.util.List;
  */
 public class UpstreamMavenArtifact extends MavenArtifact {
 
+    private String newVersion;
     private boolean dirty;
 
-    public UpstreamMavenArtifact(String groupId, String artifactId, String version) {
-        super(groupId, artifactId, version);
+    public UpstreamMavenArtifact(String groupId, String artifactId, String currentVersion, String newVersion) {
+        super(groupId, artifactId, currentVersion);
+        this.newVersion = newVersion;
         this.dirty = true;
     }
 
@@ -37,4 +39,7 @@ public class UpstreamMavenArtifact extends MavenArtifact {
         return dirty;
     }
 
+    public String getNewVersion() {
+        return newVersion;
+    }
 }

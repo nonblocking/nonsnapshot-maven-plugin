@@ -49,8 +49,10 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualizable {
 
     private static final Logger LOG = LoggerFactory.getLogger(NonSnapshotBaseMojo.class);
+    private static final String DEFAULT_TIMESTAMP_QUALIFIER_PATTERN = "yyyyMMddHHmm";
 
     protected static final String DIRTY_MODULES_REGISTRY_FILE = "nonSnapshotDirtyModules.txt";
+
     
     /**
      * The SCM (Source Code Management System) type
@@ -94,6 +96,12 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     @Parameter(required = true)
     private String baseVersion;
 
+    @Parameter(defaultValue = "false")
+    private boolean useTimestampQualifier;
+
+    @Parameter(defaultValue = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN)
+    private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
+
     @Parameter
     private List<String> upstreamGroupIds;
 
@@ -102,15 +110,6 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
      */
     @Parameter(defaultValue = "false")
     private boolean generateScriptForIncrementalBuild;
-
-    /**
-     * When to update dependency versions. 
-     * <br/>
-     * E.g. if the strategy is SAME_MAJOR and an artifact from the dependency list is in the workspace but has another
-     * major version, the dependency version isn't updated.
-     */
-    @Parameter(defaultValue = "ALWAYS")
-    private DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy;
 
     /**
      * Disable this plugin
@@ -246,14 +245,6 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         this.dontFailOnCommit = dontFailOnCommit;
     }
 
-    public void setDependencyUpdateStrategy(DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy) {
-        this.dependencyUpdateStrategy = dependencyUpdateStrategy;
-    }
-
-    public DEPENDENCY_UPDATE_STRATEGY getDependencyUpdateStrategy() {
-        return dependencyUpdateStrategy;
-    }
-
     public void setMavenProject(MavenProject mavenProject) {
         this.mavenProject = mavenProject;
     }
@@ -286,7 +277,28 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         return repositorySystemSession;
     }
 
+    public void setDontFailOnUpstreamVersionResolution(boolean dontFailOnUpstreamVersionResolution) {
+        this.dontFailOnUpstreamVersionResolution = dontFailOnUpstreamVersionResolution;
+    }
+
     public boolean isDontFailOnUpstreamVersionResolution() {
         return dontFailOnUpstreamVersionResolution;
     }
+
+    public void setUseTimestampQualifier(boolean useTimestampQualifier) {
+        this.useTimestampQualifier = useTimestampQualifier;
+    }
+
+    public boolean isUseTimestampQualifier() {
+        return useTimestampQualifier;
+    }
+
+    public void setTimestampQualifierPattern(String timestampQualifierPattern) {
+        this.timestampQualifierPattern = timestampQualifierPattern;
+    }
+
+    public String getTimestampQualifierPattern() {
+        return timestampQualifierPattern;
+    }
 }
+

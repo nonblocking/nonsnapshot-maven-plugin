@@ -23,10 +23,15 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
+import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.eclipse.aether.artifact.Artifact;
@@ -59,8 +64,12 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
     private static String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    private String timestamp;
+
     @Override
     protected void internalExecute() {
+        setTimestamp();
+
         List<Model> mavenModels = getModuleTraverser().findAllModules(getMavenProject());
 
         List<MavenModule> mavenModules = new ArrayList<MavenModule>();
@@ -70,11 +79,13 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             mavenModules.add(artifact);
         }
 
-        List<MavenModule> rootModule = getDependencyTreeProcessor().buildDependencyTree(mavenModules);
-
-        getDependencyTreeProcessor().applyBaseVersions(rootModule, getBaseVersion());
+        List<MavenModule> rootModules = getDependencyTreeProcessor().buildDependencyTree(mavenModules);
 
         markDirtyWhenRevisionChangedOrInvalidQualifier(mavenModules);
+
+        if (getUpstreamGroupIds() != null) {
+            updateUpstreamPlugins(mavenModules);
+        }
 
         //Recursively mark artifacts dirty
         boolean changes = getDependencyTreeProcessor().markAllArtifactsDirtyWithDirtyDependencies(mavenModules);
@@ -84,7 +95,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         setNextRevisionOnDirtyArtifacts(mavenModules);
 
-        dumpArtifactTreeToLog(rootModule);
+        dumpArtifactTreeToLog(rootModules);
         
         writeAndCommitArtifacts(mavenModules);
     }
@@ -94,8 +105,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         for (MavenModule mavenModule : mavenModules) {
             if (mavenModule.isDirty() && mavenModule.getNewVersion() != null) {
-                getMavenPomHandler().updateArtifact(mavenModule, getDependencyUpdateStrategy());
-                LOG.info("Add module to dirty registry list: ", mavenModule.getPomFile().getAbsolutePath());
+                getMavenPomHandler().updateArtifact(mavenModule);
+                LOG.debug("Add module to dirty registry list: {}", mavenModule.getPomFile().getAbsolutePath());
                 pomsToCommit.add(mavenModule.getPomFile());
             }
         }
@@ -106,8 +117,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             writeDirtyModulesRegistry(pomsToCommit, dirtyModulesRegistryFile);
 
             if (!isDeferPomCommit()) {
-                LOG.info("Commiting {} POM files", pomsToCommit.size());
-                getScmHandler().commitFiles(pomsToCommit, "Nonsnapshot Plugin: Version of " + pomsToCommit.size() + " artifacts updated");
+                LOG.info("Committing {} POM files", pomsToCommit.size());
+                getScmHandler().commitFiles(pomsToCommit, "Version of " + pomsToCommit.size() + " artifacts updated");
             } else {
                 LOG.info("Deferring the POM commit. Execute nonsnapshot:commit to actually commit the changes.");
             }
@@ -157,10 +168,38 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         }
     }
 
+    private void updateUpstreamPlugins(List<MavenModule> mavenModules) {
+        for (MavenModule mavenModule : mavenModules) {
+            for (MavenModuleDependency moduleDependency : mavenModule.getDependencies()) {
+                MavenArtifact dependency = moduleDependency.getArtifact();
+                if (!(dependency instanceof MavenModule)
+                    && getUpstreamGroupIds().contains(dependency.getGroupId())) {
+
+                    LOG.debug("Upstream dependency found: {}:{}", dependency.getGroupId(), dependency.getArtifactId());
+
+                    String latestVersion = determineLatestNonSnapshotVersionInRepo(dependency);
+                    if (latestVersion == null || !latestVersion.equals(dependency.getVersion())) {
+                        LOG.info("Found new upstream version for artifact {}: {}", dependency.getArtifactId(), latestVersion);
+
+                        UpstreamMavenArtifact upstreamMavenArtifact =
+                            new UpstreamMavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), latestVersion);
+                        moduleDependency.setArtifact(upstreamMavenArtifact);
+                    }
+
+                }
+            }
+        }
+    }
+
     private String determineLatestNonSnapshotVersionInRepo(MavenArtifact mavenArtifact) {
         String currentVersion = mavenArtifact.getVersion();
+        if (currentVersion.contains("$")) {
+            currentVersion = "1.0";
+        } else if (currentVersion.contains("-")) {
+            currentVersion = currentVersion.split("-")[0];
+        }
 
-        String versionQuery = mavenArtifact.getGroupId() + ":" + mavenArtifact.getArtifactId() + ":[" + currentVersion + ",)";
+        String versionQuery = mavenArtifact.getGroupId() + ":" + mavenArtifact.getArtifactId() + ":(" + currentVersion + ",)";
         Artifact aetherArtifact = new DefaultArtifact(versionQuery);
 
         VersionRangeRequest rangeRequest = new VersionRangeRequest();
@@ -168,10 +207,14 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         rangeRequest.setRepositories(getRemoteRepositories());
 
         try {
+            LOG.debug("Resolving versions for {}", versionQuery);
             VersionRangeResult result = getRepositorySystem().resolveVersionRange(getRepositorySystemSession(), rangeRequest);
-            LOG.info("Found versions for {}: {}", versionQuery, result);
+            LOG.debug("Found versions for {}: {}", versionQuery, result);
 
-            for (Version version : result.getVersions()) {
+            List<Version> versions = result.getVersions();
+            Collections.reverse(versions);
+
+            for (Version version : versions) {
                 if (!version.toString().endsWith("-SNAPSHOT")) {
                     return version.toString();
                 }
@@ -195,7 +238,11 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             File artifactPath = artifact.getPomFile().getParentFile();  
                     
             if (artifact.isDirty() && getScmHandler().isWorkingCopy(artifactPath)) {
-                artifact.setNextRevisionId(getScmHandler().getNextRevisionId(artifactPath));
+                if (!isUseTimestampQualifier()) {
+                    artifact.setNewVersion(getBaseVersion() + "-" + getScmHandler().getNextRevisionId(artifactPath));
+                } else {
+                    artifact.setNewVersion(getBaseVersion() + "-" + this.timestamp);
+                }
             }
         }
     }
@@ -220,19 +267,13 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         }
     }
 
-    private String getRelativePath(File file, File folder) {
-        String filePath = file.getAbsolutePath();
-        String folderPath = folder.getAbsolutePath();
-        if (filePath.startsWith(folderPath)) {
-            return filePath.substring(folderPath.length() + 1);
-        } else {
-            return null;
-        }
+    private void setTimestamp() {
+        this.timestamp = new SimpleDateFormat(getTimestampQualifierPattern()).format(new Date());
     }
-    
-    private void dumpArtifactTreeToLog(List<MavenModule> rootArtifacts) {
+
+    private void dumpArtifactTreeToLog(List<MavenModule> rootModules) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        getDependencyTreeProcessor().printMavenModuleTree(rootArtifacts, new PrintStream(baos));
+        getDependencyTreeProcessor().printMavenModuleTree(rootModules, new PrintStream(baos));
         LOG.info("\n" + baos.toString());
     }
 }

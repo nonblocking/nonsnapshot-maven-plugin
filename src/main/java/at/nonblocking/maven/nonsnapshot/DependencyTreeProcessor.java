@@ -41,14 +41,6 @@ public interface DependencyTreeProcessor {
     List<MavenModule> buildDependencyTree(List<MavenModule> artifacts);
     
     /**
-     * Apply given base versions to the artifact trees.
-     * 
-     * @param rootArtifacts List<MavenModule>
-     * @param baseVersion String
-     */
-    void applyBaseVersions(List<MavenModule> rootArtifacts, String baseVersion);
-    
-    /**
      * Mark all artifacts with dirty dependencies dirty.
      * 
      * @param artifacts List<MavenModule>

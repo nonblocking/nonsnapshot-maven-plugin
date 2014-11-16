@@ -48,8 +48,7 @@ public interface MavenPomHandler {
      * Update the project version and all the versions of dirty dependencies.
      * 
      * @param workspaceArtifact WorkspaceArtifact
-     * @param dependencyUpdateStrategy DEPENDENCY_UPDATE_STRATEGY 
      */
-    void updateArtifact(MavenModule workspaceArtifact, DEPENDENCY_UPDATE_STRATEGY dependencyUpdateStrategy);
+    void updateArtifact(MavenModule workspaceArtifact);
 
 }

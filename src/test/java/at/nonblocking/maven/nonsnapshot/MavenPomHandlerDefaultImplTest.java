@@ -78,127 +78,20 @@ public class MavenPomHandlerDefaultImplTest {
         MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
+        wsArtifact.setNewVersion("1.1.1-12345");
         
         MavenModule dependentArtifact = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact.setDirty(true);
-        dependentArtifact.setBaseVersion("5.0.1");
-        dependentArtifact.setNextRevisionId("555");
+        dependentArtifact.setNewVersion("5.0.1-555");
         
         wsArtifact.getDependencies().get(1).setArtifact(dependentArtifact);
         
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        pomHandler.updateArtifact(wsArtifact);
                 
         Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
         
         assertEquals("1.1.1-12345", pom.getVersion());
         assertEquals("5.0.1-555", pom.getDependencies().get(1).getVersion());
-    }
-    
-    @Test
-    public void testReadAndUpdateArtifactDependecyStrategySameMajor() throws Exception {
-        File pomFile = new File("target/test-pom.xml");
-        IOUtil.copy(new FileReader("src/test/resources/test-pom.xml"), new FileOutputStream(pomFile));
-
-        MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
-        
-        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
-        
-        wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
-        
-        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
-        dependentArtifact1.setDirty(true);
-        dependentArtifact1.setBaseVersion("5.0.1");
-        dependentArtifact1.setNextRevisionId("555");
-        
-        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
-        dependentArtifact2.setDirty(true);
-        dependentArtifact2.setBaseVersion("2.4.5");
-        dependentArtifact2.setNextRevisionId("555");
-        
-        wsArtifact.getDependencies().get(0).setArtifact(dependentArtifact1);
-        wsArtifact.getDependencies().get(1).setArtifact(dependentArtifact2);
-        
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.SAME_MAJOR);
-                
-        Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
-        
-        assertEquals("1.1.1-12345", pom.getVersion());
-        assertEquals("1.1.1-123", pom.getDependencies().get(0).getVersion());
-        assertEquals("2.4.5-555", pom.getDependencies().get(1).getVersion());
-    }
-    
-    @Test
-    public void testReadAndUpdateArtifactDependecyStrategySameMajorMinor() throws Exception {
-        File pomFile = new File("target/test-pom.xml");
-        IOUtil.copy(new FileReader("src/test/resources/test-pom.xml"), new FileOutputStream(pomFile));
-
-        MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
-        
-        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
-        
-        wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
-        
-        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
-        dependentArtifact1.setDirty(true);
-        dependentArtifact1.setBaseVersion("1.2.2");
-        dependentArtifact1.setNextRevisionId("555");
-        
-        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
-        dependentArtifact2.setDirty(true);
-        dependentArtifact2.setBaseVersion("2.0.11");
-        dependentArtifact2.setNextRevisionId("555");
-        
-        wsArtifact.getDependencies().get(0).setArtifact(dependentArtifact1);
-        wsArtifact.getDependencies().get(1).setArtifact(dependentArtifact2);
-        
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.SAME_MAJOR_MINOR);
-                
-        Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
-        
-        assertEquals("1.1.1-12345", pom.getVersion());
-        assertEquals("1.1.1-123", pom.getDependencies().get(0).getVersion());
-        assertEquals("2.0.11-555", pom.getDependencies().get(1).getVersion());
-    }
-    
-    @Test
-    public void testReadAndUpdateArtifactDependecyStrategySameBaseVersion() throws Exception {
-        File pomFile = new File("target/test-pom.xml");
-        IOUtil.copy(new FileReader("src/test/resources/test-pom.xml"), new FileOutputStream(pomFile));
-
-        MavenPomHandler pomHandler = new MavenPomHandlerDefaultImpl();
-        
-        MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
-        
-        wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
-        
-        MavenModule dependentArtifact1 = new MavenModule(null, "at.nonblocking.at", "test2", "1.1.1-123");
-        dependentArtifact1.setDirty(true);
-        dependentArtifact1.setBaseVersion("1.1.2");
-        dependentArtifact1.setNextRevisionId("555");
-        
-        MavenModule dependentArtifact2 = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
-        dependentArtifact2.setDirty(true);
-        dependentArtifact2.setBaseVersion("2.0.5");
-        dependentArtifact2.setNextRevisionId("555");
-        
-        wsArtifact.getDependencies().get(0).setArtifact(dependentArtifact1);
-        wsArtifact.getDependencies().get(1).setArtifact(dependentArtifact2);
-        
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.SAME_BASE_VERSION);
-                
-        Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
-        
-        assertEquals("1.1.1-12345", pom.getVersion());
-        assertEquals("1.1.1-123", pom.getDependencies().get(0).getVersion());
-        assertEquals("2.0.5-555", pom.getDependencies().get(1).getVersion());
     }
     
     @Test
@@ -211,17 +104,15 @@ public class MavenPomHandlerDefaultImplTest {
         MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
+        wsArtifact.setNewVersion("1.1.1-12345");
         
         MavenModule parentArtifact = new MavenModule(null, "at.nonblocking.at", "parent-test", "1.4.5-123");
         parentArtifact.setDirty(true);
-        parentArtifact.setBaseVersion("3.3.3");
-        parentArtifact.setNextRevisionId("456");
+        parentArtifact.setNewVersion("3.3.3-456");
         
         wsArtifact.setParent(parentArtifact);
         
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        pomHandler.updateArtifact(wsArtifact);
                 
         Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
         
@@ -242,10 +133,9 @@ public class MavenPomHandlerDefaultImplTest {
         assertTrue(wsArtifact.isInsertVersionTag());
         
         wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
+        wsArtifact.setNewVersion("1.1.1-12345");
               
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        pomHandler.updateArtifact(wsArtifact);
                 
         Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
         
@@ -262,18 +152,16 @@ public class MavenPomHandlerDefaultImplTest {
         MavenModule wsArtifact = pomHandler.readArtifact(pomFile);
         
         wsArtifact.setDirty(true);
-        wsArtifact.setBaseVersion("1.1.1");
-        wsArtifact.setNextRevisionId("12345");
+        wsArtifact.setNewVersion("1.1.1-12345");
         
         MavenModule dependentArtifact = new MavenModule(null, "at.nonblocking.at", "test2", "2.0.5-123");
         dependentArtifact.setDirty(true);
-        dependentArtifact.setBaseVersion("5.0.1");
-        dependentArtifact.setNextRevisionId("555");
+        dependentArtifact.setNewVersion("5.0.1-555");
         dependentArtifact.setInsertVersionTag(true);
         
         wsArtifact.getDependencies().get(1).setArtifact(dependentArtifact);
         
-        pomHandler.updateArtifact(wsArtifact, DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
+        pomHandler.updateArtifact(wsArtifact);
                 
         Model pom = new MavenXpp3Reader().read(new FileInputStream(pomFile));
         

@@ -39,7 +39,6 @@ public class NonSnapshotCommitMojoTest {
         this.nonSnapshotMojo.setDependencyTreeProcessor(this.mockDependencyTreeProcessor);
         this.nonSnapshotMojo.setMavenPomHandler(this.mockMavenPomHandler);
         this.nonSnapshotMojo.setScmHandler(this.mockScmHandler);
-        this.nonSnapshotMojo.setDependencyUpdateStrategy(DEPENDENCY_UPDATE_STRATEGY.ALWAYS);
     }
 
     @Test
