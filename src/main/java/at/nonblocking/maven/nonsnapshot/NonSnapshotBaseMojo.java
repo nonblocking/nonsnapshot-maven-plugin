@@ -53,12 +53,11 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
     protected static final String DIRTY_MODULES_REGISTRY_FILE = "nonSnapshotDirtyModules.txt";
 
-    
     /**
      * The SCM (Source Code Management System) type
      */
-    @Parameter(defaultValue = "svn")
-    private String scmType;
+    @Parameter(defaultValue = "SVN")
+    private SCM_TYPE scmType;
     
     /**
      * SCM Username
@@ -97,7 +96,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     private String baseVersion;
 
     @Parameter(defaultValue = "false")
-    private boolean useTimestampQualifier;
+    private boolean useSvnRevisionQualifier;
 
     @Parameter(defaultValue = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN)
     private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
@@ -161,7 +160,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
             LOG.debug("Lookup for ScmHandler implementation of type: {}", this.scmType);
             
             try {
-                this.scmHandler = this.plexusContainer.lookup(ScmHandler.class, this.scmType.toLowerCase());
+                this.scmHandler = this.plexusContainer.lookup(ScmHandler.class, this.scmType.name());
             } catch (ComponentLookupException e) {
                 throw new NonSnapshotPluginException("Unable to instantiate ScmHandler class for type: " + this.scmType, e);
             }
@@ -185,56 +184,44 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         this.plexusContainer = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
     }
 
+    public SCM_TYPE getScmType() {
+        return scmType;
+    }
+
+    public void setScmType(SCM_TYPE scmType) {
+        this.scmType = scmType;
+    }
+
+    public String getScmUser() {
+        return scmUser;
+    }
+
     public void setScmUser(String scmUser) {
         this.scmUser = scmUser;
+    }
+
+    public String getScmPassword() {
+        return scmPassword;
     }
 
     public void setScmPassword(String scmPassword) {
         this.scmPassword = scmPassword;
     }
 
-    public void setMavenPomHandler(MavenPomHandler mavenPomHandler) {
-        this.mavenPomHandler = mavenPomHandler;
+    public boolean isDeferPomCommit() {
+        return deferPomCommit;
     }
 
     public void setDeferPomCommit(boolean deferPomCommit) {
         this.deferPomCommit = deferPomCommit;
     }
 
-    public void setSkip(boolean skip) {
-        this.skip = skip;
+    public boolean isDontFailOnUpstreamVersionResolution() {
+        return dontFailOnUpstreamVersionResolution;
     }
 
-    public ScmHandler getScmHandler() {
-        return scmHandler;
-    }
-
-    public void setScmHandler(ScmHandler scmHandler) {
-        this.scmHandler = scmHandler;
-    }
-
-    public MavenPomHandler getMavenPomHandler() {
-        return mavenPomHandler;
-    }
-
-    public DependencyTreeProcessor getDependencyTreeProcessor() {
-        return dependencyTreeProcessor;
-    }
-
-    public void setDependencyTreeProcessor(DependencyTreeProcessor dependencyTreeProcessor) {
-        this.dependencyTreeProcessor = dependencyTreeProcessor;
-    }
-
-    public void setModuleTraverser(ModuleTraverser moduleTraverser) {
-        this.moduleTraverser = moduleTraverser;
-    }
-
-    public ModuleTraverser getModuleTraverser() {
-        return moduleTraverser;
-    }
-
-    public boolean isDeferPomCommit() {
-        return deferPomCommit;
+    public void setDontFailOnUpstreamVersionResolution(boolean dontFailOnUpstreamVersionResolution) {
+        this.dontFailOnUpstreamVersionResolution = dontFailOnUpstreamVersionResolution;
     }
 
     public boolean isDontFailOnCommit() {
@@ -245,64 +232,124 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
         this.dontFailOnCommit = dontFailOnCommit;
     }
 
-    public void setMavenProject(MavenProject mavenProject) {
-        this.mavenProject = mavenProject;
-    }
-
     public MavenProject getMavenProject() {
         return mavenProject;
     }
 
-    public void setBaseVersion(String baseVersion) {
-        this.baseVersion = baseVersion;
+    public void setMavenProject(MavenProject mavenProject) {
+        this.mavenProject = mavenProject;
     }
 
     public String getBaseVersion() {
         return baseVersion;
     }
 
-    public List<String> getUpstreamGroupIds() {
-        return upstreamGroupIds;
+    public void setBaseVersion(String baseVersion) {
+        this.baseVersion = baseVersion;
     }
 
-    public List<RemoteRepository> getRemoteRepositories() {
-        return remoteRepositories;
+    public boolean isUseSvnRevisionQualifier() {
+        return useSvnRevisionQualifier;
     }
 
-    public RepositorySystem getRepositorySystem() {
-        return repositorySystem;
-    }
-
-    public RepositorySystemSession getRepositorySystemSession() {
-        return repositorySystemSession;
-    }
-
-    public void setDontFailOnUpstreamVersionResolution(boolean dontFailOnUpstreamVersionResolution) {
-        this.dontFailOnUpstreamVersionResolution = dontFailOnUpstreamVersionResolution;
-    }
-
-    public boolean isDontFailOnUpstreamVersionResolution() {
-        return dontFailOnUpstreamVersionResolution;
-    }
-
-    public void setUseTimestampQualifier(boolean useTimestampQualifier) {
-        this.useTimestampQualifier = useTimestampQualifier;
-    }
-
-    public boolean isUseTimestampQualifier() {
-        return useTimestampQualifier;
-    }
-
-    public void setTimestampQualifierPattern(String timestampQualifierPattern) {
-        this.timestampQualifierPattern = timestampQualifierPattern;
+    public void setUseSvnRevisionQualifier(boolean useSvnRevisionQualifier) {
+        this.useSvnRevisionQualifier = useSvnRevisionQualifier;
     }
 
     public String getTimestampQualifierPattern() {
         return timestampQualifierPattern;
     }
 
+    public void setTimestampQualifierPattern(String timestampQualifierPattern) {
+        this.timestampQualifierPattern = timestampQualifierPattern;
+    }
+
+    public List<String> getUpstreamGroupIds() {
+        return upstreamGroupIds;
+    }
+
+    public void setUpstreamGroupIds(List<String> upstreamGroupIds) {
+        this.upstreamGroupIds = upstreamGroupIds;
+    }
+
     public boolean isGenerateIncrementalBuildScripts() {
         return generateIncrementalBuildScripts;
+    }
+
+    public void setGenerateIncrementalBuildScripts(boolean generateIncrementalBuildScripts) {
+        this.generateIncrementalBuildScripts = generateIncrementalBuildScripts;
+    }
+
+    public boolean isSkip() {
+        return skip;
+    }
+
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    public MavenPomHandler getMavenPomHandler() {
+        return mavenPomHandler;
+    }
+
+    public void setMavenPomHandler(MavenPomHandler mavenPomHandler) {
+        this.mavenPomHandler = mavenPomHandler;
+    }
+
+    public ModuleTraverser getModuleTraverser() {
+        return moduleTraverser;
+    }
+
+    public void setModuleTraverser(ModuleTraverser moduleTraverser) {
+        this.moduleTraverser = moduleTraverser;
+    }
+
+    public DependencyTreeProcessor getDependencyTreeProcessor() {
+        return dependencyTreeProcessor;
+    }
+
+    public void setDependencyTreeProcessor(DependencyTreeProcessor dependencyTreeProcessor) {
+        this.dependencyTreeProcessor = dependencyTreeProcessor;
+    }
+
+    public RepositorySystem getRepositorySystem() {
+        return repositorySystem;
+    }
+
+    public void setRepositorySystem(RepositorySystem repositorySystem) {
+        this.repositorySystem = repositorySystem;
+    }
+
+    public RepositorySystemSession getRepositorySystemSession() {
+        return repositorySystemSession;
+    }
+
+    public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
+        this.repositorySystemSession = repositorySystemSession;
+    }
+
+    public List<RemoteRepository> getRemoteRepositories() {
+        return remoteRepositories;
+    }
+
+    public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
+        this.remoteRepositories = remoteRepositories;
+    }
+
+    public ScmHandler getScmHandler() {
+        return scmHandler;
+    }
+
+    public void setScmHandler(ScmHandler scmHandler) {
+        this.scmHandler = scmHandler;
+    }
+
+    public PlexusContainer getPlexusContainer() {
+        return plexusContainer;
+    }
+
+    public void setPlexusContainer(PlexusContainer plexusContainer) {
+        this.plexusContainer = plexusContainer;
     }
 }
 

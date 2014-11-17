@@ -155,14 +155,28 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                     mavenModule.setDirty(true);
 
                 } else {
-                    String currentRevision = getScmHandler().getRevisionId(mavenModule.getPomFile().getParentFile());
-                    LOG.debug("Current project revision id: {}; revision id in the version qualifier: {}", currentRevision, qualifierString);
+                    if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
+                        String currentRevision = getScmHandler().getRevisionId(mavenModule.getPomFile().getParentFile());
+                        LOG.debug("Module {}:{}: Current revision nr: {}, revision nr in the version qualifier: {}",
+                            new Object[]{ mavenModule.getGroupId(), mavenModule.getArtifactId(), currentRevision, qualifierString });
 
-                    if (!currentRevision.equals(qualifierString)) {
-                        LOG.info("Current project revision id is different from the revision id in the version qualifier of artifact {}:{}. Assigning a new version.",
-                                mavenModule.getGroupId(), mavenModule.getArtifactId());
-                        mavenModule.setDirty(true);
+                        if (!qualifierString.equals(currentRevision)) {
+                            LOG.info("Module {}:{}: Revision nr is different from the revision nr in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                            mavenModule.setDirty(true);
+                        }
+                    } else {
+                        Date lastCommitTimestamp = getScmHandler().getLastCommitTimestamp(mavenModule.getPomFile().getParentFile());
+                        String timestamp = null;
+                        if (lastCommitTimestamp != null) {
+                            timestamp = new SimpleDateFormat(getTimestampQualifierPattern()).format(lastCommitTimestamp);
+                        }
+                        LOG.debug("Module {}:{}: Last committed timestamp: {}, timestamp in the version qualifier: {}",
+                            new Object[]{ mavenModule.getGroupId(), mavenModule.getArtifactId(), timestamp, qualifierString });
 
+                        if (!qualifierString.equals(timestamp)) {
+                            LOG.info("Module {}:{}: Last committed timestamp is different from the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                            mavenModule.setDirty(true);
+                        }
                     }
                 }
             }
@@ -180,7 +194,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
                     String latestVersion = determineLatestNonSnapshotVersionInRepo(dependency);
                     if (latestVersion == null || !latestVersion.equals(dependency.getVersion())) {
-                        LOG.info("Found new upstream version for artifact {}: {}", dependency.getArtifactId(), latestVersion);
+                        LOG.info("Found new upstream version for module {}:{}: {}", new Object[]{ dependency.getGroupId(), dependency.getArtifactId(), latestVersion });
 
                         UpstreamMavenArtifact upstreamMavenArtifact =
                             new UpstreamMavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), latestVersion);
@@ -239,7 +253,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             File artifactPath = mavenModule.getPomFile().getParentFile();
                     
             if (mavenModule.isDirty() && getScmHandler().isWorkingCopy(artifactPath)) {
-                if (!isUseTimestampQualifier()) {
+                if (isUseSvnRevisionQualifier()) {
                     mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getNextRevisionId(artifactPath));
                 } else {
                     mavenModule.setNewVersion(getBaseVersion() + "-" + this.timestamp);
@@ -272,11 +286,16 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     }
 
     private void generateIncrementalBuildScripts(List<File> pomFileList) {
+        File batFile = new File(getMavenProject().getBasedir(), "nonsnapshotBuildIncremental.bat");
+        File shellFile = new File(getMavenProject().getBasedir(), "nonsnapshotBuildIncremental.sh");
 
-        LOG.info("!!!!!!!!! sdklfjdslfk");
+        LOG.info("Writing windows batch script for incremental build to: {}", batFile.getAbsolutePath());
 
         //TODO
 
+        LOG.info("Writing unix shell script for incremental build to: {}", shellFile.getAbsolutePath());
+
+        //TODO
     }
 
     private void setTimestamp() {

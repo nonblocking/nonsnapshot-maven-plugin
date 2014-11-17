@@ -54,8 +54,8 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
         }
         
         try {
-            LOG.info("Commiting {} POM files", pomsToCommit.size());
-            getScmHandler().commitFiles(pomsToCommit, "Nonsnapshot Plugin: Version of " + pomsToCommit.size() + " artifacts updated");
+            LOG.info("Committing {} POM files", pomsToCommit.size());
+            getScmHandler().commitFiles(pomsToCommit, "Nonsnapshot Plugin: Version of " + pomsToCommit.size() + " modules updated");
         } catch (RuntimeException e) {
             if (isDontFailOnCommit()) {
                 LOG.warn("Error occurred during commit, ignoring it since dontFailOnCommit=true.", e);
@@ -82,7 +82,7 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
 
             reader.close();
 
-            LOG.info("Deleting {}", inputFile.getAbsolutePath());
+            LOG.info("Deleting dirty modules registry file: {}", inputFile.getAbsolutePath());
             inputFile.delete();
             
             return pomFileList;

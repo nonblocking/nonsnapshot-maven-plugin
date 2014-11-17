@@ -16,6 +16,7 @@
 package at.nonblocking.maven.nonsnapshot;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public interface ScmHandler {
     boolean isWorkingCopy(File projectDirectory);
     
     /**
-     * Get the revision number for given project directory.
+     * Get the revision number for given model directory.
      * <br/>
      * If nothing has changed since the last build, this MUST return the same revision id as 
      * getNextRevisionId() in the previous build.
@@ -42,10 +43,18 @@ public interface ScmHandler {
      * For SVN this could just be the current revision number.
      * For GIT this could be the last (abbreviated) commit hash not caused by this maven plugin.
      * 
-     * @param projectDirectory File
+     * @param moduleDirectory File
      * @return String
      */
-    String getRevisionId(File projectDirectory);
+    String getRevisionId(File moduleDirectory);
+
+    /**
+     * Get the timestamp of the last commit in given directory.
+     *
+     * @param moduleDirectory File
+     * @return Date
+     */
+    Date getLastCommitTimestamp(File moduleDirectory);
 
     /**
      * Get the next revision number this path would get in case of a commit.

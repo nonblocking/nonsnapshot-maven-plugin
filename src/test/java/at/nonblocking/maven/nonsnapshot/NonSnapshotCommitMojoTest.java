@@ -56,7 +56,7 @@ public class NonSnapshotCommitMojoTest {
 
         this.nonSnapshotMojo.execute();
 
-        verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3), "Nonsnapshot Plugin: Version of 3 artifacts updated");
+        verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3), "Nonsnapshot Plugin: Version of 3 modules updated");
         
         assertFalse(pomFilesToCommit.exists());
     }
@@ -77,7 +77,7 @@ public class NonSnapshotCommitMojoTest {
 
         this.nonSnapshotMojo.execute();
 
-        verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3), "Nonsnapshot Plugin: Version of 3 artifacts updated");
+        verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3), "Nonsnapshot Plugin: Version of 3 modules updated");
         
         assertFalse(pomFilesToCommit.exists());
     }
@@ -107,7 +107,7 @@ public class NonSnapshotCommitMojoTest {
         writer.write(pom1.getPath() + System.getProperty("line.separator"));
         writer.close();
         
-        doThrow(new RuntimeException("test")).when(this.mockScmHandler).commitFiles(anyList(), eq("Nonsnapshot Plugin: Version of 1 artifacts updated"));
+        doThrow(new RuntimeException("test")).when(this.mockScmHandler).commitFiles(anyList(), eq("Nonsnapshot Plugin: Version of 1 modules updated"));
         
         this.nonSnapshotMojo.setDontFailOnCommit(false);
         

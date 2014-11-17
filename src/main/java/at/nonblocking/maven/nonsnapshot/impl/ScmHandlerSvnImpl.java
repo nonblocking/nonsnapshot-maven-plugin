@@ -16,6 +16,7 @@
 package at.nonblocking.maven.nonsnapshot.impl;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -40,7 +41,7 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
  * 
  * @author Juergen Kofler
  */
-@Component(role = ScmHandler.class, hint = "svn")
+@Component(role = ScmHandler.class, hint = "SVN")
 public class ScmHandlerSvnImpl implements ScmHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerSvnImpl.class);
@@ -61,14 +62,26 @@ public class ScmHandlerSvnImpl implements ScmHandler {
     }
 
     @Override
-    public String getRevisionId(File path) {
-        LOG.debug("Try to obtain revision for path: {}", path.getAbsolutePath());
+    public String getRevisionId(File moduleDirectory) {
+        LOG.debug("Try to obtain revision for path: {}", moduleDirectory.getAbsolutePath());
 
         try {
-            SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
+            SVNInfo info = this.svnClientManager.getWCClient().doInfo(moduleDirectory, null);
             return String.valueOf(info.getCommittedRevision().getNumber());
         } catch (SVNException e) {
-            throw new NonSnapshotPluginException("Failed to obtain SVN revision for path: " + path.getAbsolutePath(), e);
+            throw new NonSnapshotPluginException("Failed to obtain SVN revision for path: " + moduleDirectory.getAbsolutePath(), e);
+        }
+    }
+
+    @Override
+    public Date getLastCommitTimestamp(File moduleDirectory) {
+        LOG.debug("Try to obtain last commit timestamp for path: {}", moduleDirectory.getAbsolutePath());
+
+        try {
+            SVNInfo info = this.svnClientManager.getWCClient().doInfo(moduleDirectory, null);
+            return info.getCommittedDate();
+        } catch (SVNException e) {
+            throw new NonSnapshotPluginException("Failed to obtain SVN last commit timestamp for path: " + moduleDirectory.getAbsolutePath(), e);
         }
     }
 
@@ -93,7 +106,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
 
     @Override
     public void commitFiles(List<File> files, String commitMessage) {
-        LOG.debug("Commiting files: {}", files);
+        LOG.debug("Committing files: {}", files);
 
         this.cachedNextRevision = null;
 
@@ -105,7 +118,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
                 throw new NonSnapshotPluginException("Failed to commit files. Message: " + info.getErrorMessage().getMessage());
             }
 
-            LOG.debug("Files commited. New revision: {}", info.getNewRevision());
+            LOG.debug("Files committed. New revision: {}", info.getNewRevision());
 
         } catch (SVNException e) {
             throw new NonSnapshotPluginException("Failed to commit files!", e);

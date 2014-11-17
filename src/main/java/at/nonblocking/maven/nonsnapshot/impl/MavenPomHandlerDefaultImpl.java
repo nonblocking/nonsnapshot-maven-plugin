@@ -203,7 +203,7 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
             return;
         }
         if (mavenModule.getNewVersion() == null) {
-            LOG.warn("New version for artifact {}:{} not set, cannot update version!", mavenModule.getGroupId(), mavenModule.getArtifactId());
+            LOG.warn("No new version set for module {}:{}. Cannot update version!", mavenModule.getGroupId(), mavenModule.getArtifactId());
             return;
         }
 

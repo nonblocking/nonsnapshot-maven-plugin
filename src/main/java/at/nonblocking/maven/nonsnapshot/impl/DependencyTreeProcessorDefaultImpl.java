@@ -89,7 +89,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
             if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
                 MavenModule parentModule = (MavenModule) mavenModule.getParent();
                 if (parentModule.isDirty()) {
-                    LOG.debug("Marking artifact {}:{} dirty because parent is dirty.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                    LOG.debug("Marking module {}:{} dirty because parent is dirty.", mavenModule.getGroupId(), mavenModule.getArtifactId());
                     mavenModule.setDirty(true);
                     changes = true;
                     continue;
@@ -100,7 +100,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 if (dependency.getArtifact() instanceof MavenModule) {
                     MavenModule parentModule = (MavenModule) dependency.getArtifact();
                     if (parentModule.isDirty()) {
-                        LOG.debug("Marking artifact {}:{} dirty because dependency is dirty: {}:{}",
+                        LOG.debug("Marking module {}:{} dirty because dependency is dirty: {}:{}",
                             new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), parentModule.getGroupId(), parentModule.getArtifactId()});
                         mavenModule.setDirty(true);
                         changes = true;
@@ -109,7 +109,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
                 } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
                     UpstreamMavenArtifact upstreamDependency = (UpstreamMavenArtifact) dependency.getArtifact();
                     if (upstreamDependency.isDirty()) {
-                        LOG.debug("Marking artifact {}:{} dirty because upstream dependency is dirty: {}:{}",
+                        LOG.debug("Marking module {}:{} dirty because upstream dependency is dirty: {}:{}",
                             new Object[] { mavenModule.getGroupId(), mavenModule.getArtifactId(), upstreamDependency.getGroupId(), upstreamDependency.getArtifactId() });
                         mavenModule.setDirty(true);
                         changes = true;
