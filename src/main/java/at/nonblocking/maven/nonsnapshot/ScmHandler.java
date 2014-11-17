@@ -26,43 +26,38 @@ import java.util.List;
  */
 public interface ScmHandler {
 
+  String NONSNAPSHOT_COMMIT_MESSAGE_PREFIX = "Nonsnapshot Plugin:";
+
   /**
    * Check if the project directory is a even a working copy
    *
-   * @param projectDirectory File
+   * @param moduleDirectory File
    * @return boolean
    */
-  boolean isWorkingCopy(File projectDirectory);
+  boolean isWorkingCopy(File moduleDirectory);
 
   /**
-   * Get the revision number for given model directory.
-   * <br/>
-   * If nothing has changed since the last build, this MUST return the same revision id as
-   * getNextRevisionId() in the previous build.
-   * <br/><br/>
-   * For SVN this could just be the current revision number.
-   * For GIT this could be the last (abbreviated) commit hash not caused by this maven plugin.
+   * Check if there has been changes since given revisionId
    *
    * @param moduleDirectory File
-   * @return String
+   * @param revisionId String
+   * @return boolean
    */
-  String getRevisionId(File moduleDirectory);
+  boolean checkChangesSinceRevision(File moduleDirectory, String revisionId);
 
   /**
-   * Get the timestamp of the last commit in given directory.
+   * Check if there has been changes since given date
    *
    * @param moduleDirectory File
-   * @return Date
+   * @param date Date
+   * @return boolean
    */
-  Date getLastCommitTimestamp(File moduleDirectory);
+  boolean checkChangesSinceDate(File moduleDirectory, Date date);
 
   /**
    * Get the next revision number this path would get in case of a commit.
    * <br/>
-   * The return string will be the qualifier of the next POM version.
-   * <br/><br/>
-   * For SVN this could be the current root revision number + 1.
-   * For GIT this could be just the last (abbreviated) commit hash.
+   * Only supported by SVN (for all I know). Other implementations may throw NotImplementedExceptions.
    *
    * @param path File
    * @return String

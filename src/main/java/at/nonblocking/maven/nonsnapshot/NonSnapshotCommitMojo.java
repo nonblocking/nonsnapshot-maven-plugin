@@ -74,7 +74,7 @@ public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
 
       String line;
       while ((line = reader.readLine()) != null) {
-        File pom = new File(baseDir, line + "/pom.xml");
+        File pom = new File(baseDir, line + "/pom.xml").getCanonicalFile();
         if (!pomFileList.contains(pom)) {
           pomFileList.add(pom);
         }

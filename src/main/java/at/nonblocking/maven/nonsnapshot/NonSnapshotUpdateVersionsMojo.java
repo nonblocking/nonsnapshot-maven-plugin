@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,7 +120,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
       if (!isDeferPomCommit()) {
         LOG.info("Committing {} POM files", pomsToCommit.size());
-        getScmHandler().commitFiles(pomsToCommit, "Version of " + pomsToCommit.size() + " artifacts updated");
+        getScmHandler().commitFiles(pomsToCommit, ScmHandler.NONSNAPSHOT_COMMIT_MESSAGE_PREFIX + " Version of " + pomsToCommit.size() + " artifacts updated");
       } else {
         LOG.info("Deferring the POM commit. Execute nonsnapshot:commit to actually commit the changes.");
       }
@@ -156,24 +157,27 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         } else {
           if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
-            String currentRevision = getScmHandler().getRevisionId(mavenModule.getPomFile().getParentFile());
-            LOG.debug("Module {}:{}: Current revision nr: {}, revision nr in the version qualifier: {}",
-                new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), currentRevision, qualifierString});
-
-            if (!qualifierString.equals(currentRevision)) {
+            boolean changes = getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), qualifierString);
+            if (changes) {
               LOG.info("Module {}:{}: Revision nr is different from the revision nr in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }
           } else {
-            Date lastCommitTimestamp = getScmHandler().getLastCommitTimestamp(mavenModule.getPomFile().getParentFile());
-            String timestamp = null;
-            if (lastCommitTimestamp != null) {
-              timestamp = new SimpleDateFormat(getTimestampQualifierPattern()).format(lastCommitTimestamp);
-            }
-            LOG.debug("Module {}:{}: Last committed timestamp: {}, timestamp in the version qualifier: {}",
-                new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), timestamp, qualifierString});
 
-            if (!qualifierString.equals(timestamp)) {
+            //Default: compare timestamps
+
+            boolean changes;
+
+            try {
+              Date versionTimestamp = new SimpleDateFormat(getTimestampQualifierPattern()).parse(qualifierString);
+              changes = getScmHandler().checkChangesSinceDate(mavenModule.getPomFile().getParentFile(), versionTimestamp);
+            } catch (ParseException e) {
+              LOG.debug("Module {}:{}: Invalid timestamp qualifier: {}",
+                  new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), qualifierString});
+              changes = true;
+            }
+
+            if (changes) {
               LOG.info("Module {}:{}: Last committed timestamp is different from the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }

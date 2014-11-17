@@ -23,14 +23,13 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tmatesoft.svn.core.SVNCommitInfo;
-import org.tmatesoft.svn.core.SVNDepth;
-import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import at.nonblocking.maven.nonsnapshot.ScmHandler;
@@ -62,27 +61,71 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public String getRevisionId(File moduleDirectory) {
-    LOG.debug("Try to obtain revision for path: {}", moduleDirectory.getAbsolutePath());
+  public boolean checkChangesSinceRevision(final File moduleDirectory, String revisionId) {
+    final Boolean[] changes = new Boolean[1];
+    changes[0] = false;
 
     try {
-      SVNInfo info = this.svnClientManager.getWCClient().doInfo(moduleDirectory, null);
-      return String.valueOf(info.getCommittedRevision().getNumber());
+      final long revisionNr = Long.parseLong(revisionId);
+
+      this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+          SVNRevision.WORKING,
+          SVNRevision.create(revisionNr),
+          SVNRevision.WORKING,
+          false, false,
+          100L,
+          new ISVNLogEntryHandler() {
+            @Override
+            public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
+              if (svnLogEntry.getRevision() > revisionNr && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+                LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
+                    new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
+                changes[0] = true;
+              }
+            }
+          });
+
+    } catch (NumberFormatException e) {
+      LOG.warn("Invalid SVN revision: {}", revisionId);
+      return true;
+
     } catch (SVNException e) {
-      throw new NonSnapshotPluginException("Failed to obtain SVN revision for path: " + moduleDirectory.getAbsolutePath(), e);
+      LOG.warn("Failed to check changes for path: {}: {}", moduleDirectory.getAbsolutePath(), e.getMessage());
+      return true;
     }
+
+    return changes[0];
   }
 
   @Override
-  public Date getLastCommitTimestamp(File moduleDirectory) {
-    LOG.debug("Try to obtain last commit timestamp for path: {}", moduleDirectory.getAbsolutePath());
+  public boolean checkChangesSinceDate(final File moduleDirectory, final Date date) {
+    final Boolean[] changes = new Boolean[1];
+    changes[0] = false;
 
     try {
-      SVNInfo info = this.svnClientManager.getWCClient().doInfo(moduleDirectory, null);
-      return info.getCommittedDate();
+      this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+          SVNRevision.WORKING,
+          SVNRevision.create(date),
+          SVNRevision.WORKING,
+          false, true,
+          100L,
+          new ISVNLogEntryHandler() {
+            @Override
+            public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
+              if (svnLogEntry.getDate().after(date) && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+                LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
+                    new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
+                changes[0] = true;
+              }
+            }
+          });
+
     } catch (SVNException e) {
-      throw new NonSnapshotPluginException("Failed to obtain SVN last commit timestamp for path: " + moduleDirectory.getAbsolutePath(), e);
+      LOG.warn("Failed to check changes for path: {}: {}", moduleDirectory.getAbsolutePath(), e.getMessage());
+      return true;
     }
+
+    return changes[0];
   }
 
   @Override

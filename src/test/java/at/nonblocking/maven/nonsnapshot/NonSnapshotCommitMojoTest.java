@@ -44,19 +44,21 @@ public class NonSnapshotCommitMojoTest {
   @Test
   public void testCommit() throws Exception {
     File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
-    File pom1 = new File("target/test1/pom.xml");
-    File pom2 = new File("target/test2/pom.xml");
-    File pom3 = new File("target/test3/pom.xml");
+    File pom1 = new File("target/pom.xml").getAbsoluteFile();
+    File pom2 = new File("target/test1/pom.xml").getAbsoluteFile();
+    File pom3 = new File("target/test2/pom.xml").getAbsoluteFile();
+    File pom4 = new File("test3/pom.xml").getAbsoluteFile();
 
     PrintWriter writer = new PrintWriter(pomFilesToCommit);
+    writer.write("." + System.getProperty("line.separator"));
     writer.write("test1" + System.getProperty("line.separator"));
     writer.write("test2" + System.getProperty("line.separator"));
-    writer.write("test3" + System.getProperty("line.separator"));
+    writer.write("../test3" + System.getProperty("line.separator"));
     writer.close();
 
     this.nonSnapshotMojo.execute();
 
-    verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3), "Nonsnapshot Plugin: Version of 3 modules updated");
+    verify(this.mockScmHandler).commitFiles(Arrays.asList(pom1, pom2, pom3, pom4), "Nonsnapshot Plugin: Version of 4 modules updated");
 
     assertFalse(pomFilesToCommit.exists());
   }
@@ -64,9 +66,9 @@ public class NonSnapshotCommitMojoTest {
   @Test
   public void testCommitIgnoreDuplicateEntries() throws Exception {
     File pomFilesToCommit = new File("target/nonSnapshotDirtyModules.txt");
-    File pom1 = new File("target/test1/pom.xml");
-    File pom2 = new File("target/test2/pom.xml");
-    File pom3 = new File("target/test3/pom.xml");
+    File pom1 = new File("target/test1/pom.xml").getAbsoluteFile();
+    File pom2 = new File("target/test2/pom.xml").getAbsoluteFile();
+    File pom3 = new File("target/test3/pom.xml").getAbsoluteFile();
 
     PrintWriter writer = new PrintWriter(pomFilesToCommit);
     writer.write("test1" + System.getProperty("line.separator"));
