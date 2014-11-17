@@ -50,241 +50,241 @@ import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 /**
  * Default implementation of {@link MavenPomHandler}
- * 
+ *
  * @author Juergen Kofler
  */
 @Component(role = MavenPomHandler.class, hint = "default")
 public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MavenPomHandlerDefaultImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MavenPomHandlerDefaultImpl.class);
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    @Override
-    public MavenModule readArtifact(File pomFile) {
-        LOG.debug("Loading POM file: {}", pomFile.getAbsolutePath());
+  @Override
+  public MavenModule readArtifact(File pomFile) {
+    LOG.debug("Loading POM file: {}", pomFile.getAbsolutePath());
 
-        InputSource is = new InputSource();
-        MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
+    InputSource is = new InputSource();
+    MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
 
-        try {
-            Model model = reader.read(ReaderFactory.newXmlReader(pomFile), false, is);
-            model.setPomFile(pomFile);
-            return readArtifact(model);
+    try {
+      Model model = reader.read(ReaderFactory.newXmlReader(pomFile), false, is);
+      model.setPomFile(pomFile);
+      return readArtifact(model);
 
-        } catch (IOException | XmlPullParserException e) {
-            throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
-        }
+    } catch (IOException | XmlPullParserException e) {
+      throw new NonSnapshotPluginException("Failed to load POM: " + pomFile.getAbsolutePath(), e);
+    }
+  }
+
+  @Override
+  public MavenModule readArtifact(Model model) {
+    File pomFile = model.getPomFile();
+
+    String groupId = model.getGroupId();
+    if (groupId == null) {
+      if (model.getParent() != null) {
+        groupId = model.getParent().getGroupId();
+      } else {
+        throw new NonSnapshotPluginException("Invalid POM file: groupId is not set and no parent either: " + pomFile.getAbsolutePath());
+      }
     }
 
-    @Override
-    public MavenModule readArtifact(Model model) {
-        File pomFile = model.getPomFile();
+    boolean insertVersionTag = false;
+    String version = model.getVersion();
+    if (version == null) {
+      if (model.getParent() != null) {
+        version = model.getParent().getVersion();
+        insertVersionTag = true;
+      } else {
+        throw new NonSnapshotPluginException("Invalid POM file: Version is not set and no parent either: " + pomFile.getAbsolutePath());
+      }
+    }
 
-        String groupId = model.getGroupId();
-        if (groupId == null) {
-            if (model.getParent() != null) {
-                groupId = model.getParent().getGroupId();
-            } else {
-                throw new NonSnapshotPluginException("Invalid POM file: groupId is not set and no parent either: " + pomFile.getAbsolutePath());
-            }
-        }
-        
-        boolean insertVersionTag = false;
-        String version = model.getVersion();
-        if (version == null) {
-            if (model.getParent() != null) {
-                version = model.getParent().getVersion();
-                insertVersionTag = true;
-            } else {
-                throw new NonSnapshotPluginException("Invalid POM file: Version is not set and no parent either: " + pomFile.getAbsolutePath());
-            }
-        }
-        
-        MavenModule mavenModule = new MavenModule(pomFile, groupId, model.getArtifactId(), version);
-        mavenModule.setInsertVersionTag(insertVersionTag);
-        mavenModule.setVersionLocation(getVersionLocation(model));
-        
-        // Parent
-        if (model.getParent() != null) {            
-            mavenModule.setParent(new MavenArtifact(model.getParent().getGroupId(),
-                model.getParent().getArtifactId(), model.getParent().getVersion()));
-            mavenModule.setParentVersionLocation(getVersionLocation(model.getParent()));
-        }
+    MavenModule mavenModule = new MavenModule(pomFile, groupId, model.getArtifactId(), version);
+    mavenModule.setInsertVersionTag(insertVersionTag);
+    mavenModule.setVersionLocation(getVersionLocation(model));
 
-        // Dependencies
-        for (Dependency dependency : model.getDependencies()) {            
+    // Parent
+    if (model.getParent() != null) {
+      mavenModule.setParent(new MavenArtifact(model.getParent().getGroupId(),
+          model.getParent().getArtifactId(), model.getParent().getVersion()));
+      mavenModule.setParentVersionLocation(getVersionLocation(model.getParent()));
+    }
+
+    // Dependencies
+    for (Dependency dependency : model.getDependencies()) {
+      mavenModule.getDependencies().add(new MavenModuleDependency(
+          getVersionLocation(dependency),
+          new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
+    }
+
+    // Plugins
+    if (model.getBuild() != null) {
+      for (Plugin plugin : model.getBuild().getPlugins()) {
+        mavenModule.getDependencies().add(new MavenModuleDependency(
+            getVersionLocation(plugin),
+            new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
+
+        for (Dependency dependency : plugin.getDependencies()) {
+          mavenModule.getDependencies().add(new MavenModuleDependency(
+              getVersionLocation(dependency),
+              new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
+        }
+      }
+    }
+
+    // Profile Dependencies
+    for (Profile profile : model.getProfiles()) {
+      for (Dependency dependency : profile.getDependencies()) {
+        mavenModule.getDependencies().add(new MavenModuleDependency(
+            getVersionLocation(dependency),
+            new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
+      }
+    }
+
+    // Profile Plugin with Dependecies
+    for (Profile profile : model.getProfiles()) {
+      if (profile.getBuild() != null) {
+        for (Plugin plugin : profile.getBuild().getPlugins()) {
+          mavenModule.getDependencies().add(new MavenModuleDependency(
+              getVersionLocation(plugin),
+              new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
+
+
+          for (Dependency dependency : plugin.getDependencies()) {
             mavenModule.getDependencies().add(new MavenModuleDependency(
-                    getVersionLocation(dependency), 
-                    new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
+                getVersionLocation(dependency),
+                new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
+          }
         }
-
-        // Plugins
-        if (model.getBuild() != null) {
-            for (Plugin plugin : model.getBuild().getPlugins()) {                
-                mavenModule.getDependencies().add(new MavenModuleDependency(
-                        getVersionLocation(plugin), 
-                        new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
-                
-                for (Dependency dependency : plugin.getDependencies()) {                    
-                    mavenModule.getDependencies().add(new MavenModuleDependency(
-                            getVersionLocation(dependency), 
-                            new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
-                }
-            }
-        }
-
-        // Profile Dependencies
-        for (Profile profile : model.getProfiles()) {
-            for (Dependency dependency : profile.getDependencies()) {                                 
-                mavenModule.getDependencies().add(new MavenModuleDependency(
-                        getVersionLocation(dependency),  
-                        new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
-            }
-        }
-
-        // Profile Plugin with Dependecies
-        for (Profile profile : model.getProfiles()) {
-            if (profile.getBuild() != null) {
-                for (Plugin plugin : profile.getBuild().getPlugins()) {                
-                    mavenModule.getDependencies().add(new MavenModuleDependency(
-                            getVersionLocation(plugin), 
-                            new MavenArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion())));
-                         
-
-                    for (Dependency dependency : plugin.getDependencies()) {                        
-                        mavenModule.getDependencies().add(new MavenModuleDependency(
-                                getVersionLocation(dependency),  
-                                new MavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())));
-                    }
-                }
-            }
-        }
-
-        return mavenModule;
-    }
-    
-    private int getVersionLocation(InputLocationTracker tracker) {
-        InputLocation location = tracker.getLocation("version");
-        if (location == null) {
-            location = tracker.getLocation("artifactId");
-        }
-        
-        return location.getLineNumber();
+      }
     }
 
-    @Override
-    public void updateArtifact(MavenModule mavenModule) {
-        if (!mavenModule.isDirty()) {
-            return;
-        }
-        
-        List<PomUpdateCommand> commands = new ArrayList<>();
-                
-        addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, commands);
-        
-        if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
-            addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, commands);
-        }
-        
-        for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
-            if (dependency.getArtifact() instanceof MavenModule) {
-                addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, commands);
-            } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
-                addUpdateCommand((UpstreamMavenArtifact) dependency.getArtifact(), dependency.getVersionLocation(), commands);
-            }
-        }
-        
-        executeUpdateCommands(commands, mavenModule.getPomFile());
-    }
-    
-    private void addUpdateCommand(MavenModule mavenModule, Integer lineNumber, boolean dependency, List<PomUpdateCommand> commands) {
-        if (!mavenModule.isDirty()) {
-            return;
-        }
-        if (mavenModule.getNewVersion() == null) {
-            LOG.warn("No new version set for module {}:{}. Cannot update version!", mavenModule.getGroupId(), mavenModule.getArtifactId());
-            return;
-        }
+    return mavenModule;
+  }
 
-        if (!dependency && mavenModule.isInsertVersionTag()) {
-            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.INSERT, "<version>" + mavenModule.getNewVersion() + "</version>", null));
-        } else {
-            commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + mavenModule.getNewVersion() + "</version>"));
-        }
+  private int getVersionLocation(InputLocationTracker tracker) {
+    InputLocation location = tracker.getLocation("version");
+    if (location == null) {
+      location = tracker.getLocation("artifactId");
     }
 
-    private void addUpdateCommand(UpstreamMavenArtifact upstreamMavenArtifact, Integer lineNumber, List<PomUpdateCommand> commands) {
-        commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + upstreamMavenArtifact.getNewVersion() + "</version>"));
+    return location.getLineNumber();
+  }
+
+  @Override
+  public void updateArtifact(MavenModule mavenModule) {
+    if (!mavenModule.isDirty()) {
+      return;
     }
 
-    private void executeUpdateCommands(List<PomUpdateCommand> commands, File pomFile) {
-        Map<Integer, PomUpdateCommand> commandMap = new HashMap<>();
+    List<PomUpdateCommand> commands = new ArrayList<>();
 
-        for (PomUpdateCommand command : commands) {
-            commandMap.put(command.lineNumber, command);
+    addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, commands);
+
+    if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
+      addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, commands);
+    }
+
+    for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
+      if (dependency.getArtifact() instanceof MavenModule) {
+        addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, commands);
+      } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
+        addUpdateCommand((UpstreamMavenArtifact) dependency.getArtifact(), dependency.getVersionLocation(), commands);
+      }
+    }
+
+    executeUpdateCommands(commands, mavenModule.getPomFile());
+  }
+
+  private void addUpdateCommand(MavenModule mavenModule, Integer lineNumber, boolean dependency, List<PomUpdateCommand> commands) {
+    if (!mavenModule.isDirty()) {
+      return;
+    }
+    if (mavenModule.getNewVersion() == null) {
+      LOG.warn("No new version set for module {}:{}. Cannot update version!", mavenModule.getGroupId(), mavenModule.getArtifactId());
+      return;
+    }
+
+    if (!dependency && mavenModule.isInsertVersionTag()) {
+      commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.INSERT, "<version>" + mavenModule.getNewVersion() + "</version>", null));
+    } else {
+      commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + mavenModule.getNewVersion() + "</version>"));
+    }
+  }
+
+  private void addUpdateCommand(UpstreamMavenArtifact upstreamMavenArtifact, Integer lineNumber, List<PomUpdateCommand> commands) {
+    commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + upstreamMavenArtifact.getNewVersion() + "</version>"));
+  }
+
+  private void executeUpdateCommands(List<PomUpdateCommand> commands, File pomFile) {
+    Map<Integer, PomUpdateCommand> commandMap = new HashMap<>();
+
+    for (PomUpdateCommand command : commands) {
+      commandMap.put(command.lineNumber, command);
+    }
+
+    try {
+      LineNumberReader reader = new LineNumberReader(new FileReader(pomFile));
+      File tempTarget = File.createTempFile("pom", ".xml");
+      PrintWriter writer = new PrintWriter(tempTarget);
+
+      LOG.debug("Writing temporary POM file to: {}", tempTarget.getAbsoluteFile());
+
+      String line;
+      while ((line = reader.readLine()) != null) {
+        PomUpdateCommand command = commandMap.get(reader.getLineNumber());
+        if (command != null) {
+          line = executeCommand(line, command);
         }
 
-        try {
-            LineNumberReader reader = new LineNumberReader(new FileReader(pomFile));
-            File tempTarget = File.createTempFile("pom", ".xml");
-            PrintWriter writer = new PrintWriter(tempTarget);
+        writer.write(line + LINE_SEPARATOR);
+      }
 
-            LOG.debug("Writing temporary POM file to: {}", tempTarget.getAbsoluteFile());
+      reader.close();
+      writer.close();
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                PomUpdateCommand command = commandMap.get(reader.getLineNumber());
-                if (command != null) {
-                    line = executeCommand(line, command);
-                }
+      LOG.debug("Copy temporary POM file to: {}", pomFile.getAbsoluteFile());
+      IOUtil.copy(new FileReader(tempTarget), new FileOutputStream(pomFile));
+      tempTarget.delete();
 
-                writer.write(line + LINE_SEPARATOR);
-            }
+    } catch (IOException e) {
+      throw new NonSnapshotPluginException("Failed to updated POM file: " + pomFile.getAbsolutePath(), e);
+    }
+  }
 
-            reader.close();
-            writer.close();
-
-            LOG.debug("Copy temporary POM file to: {}", pomFile.getAbsoluteFile());
-            IOUtil.copy(new FileReader(tempTarget), new FileOutputStream(pomFile));
-            tempTarget.delete();
-
-        } catch (IOException e) {
-            throw new NonSnapshotPluginException("Failed to updated POM file: " + pomFile.getAbsolutePath(), e);
-        }
+  private String executeCommand(String line, PomUpdateCommand command) {
+    switch (command.commandType) {
+      case REPLACE:
+        LOG.debug("Replacing '{}' with '{}' in line number: {}", new Object[]{command.text1, command.text2, command.lineNumber});
+        return line.replaceAll(command.text1, command.text2);
+      case INSERT:
+        LOG.debug("Inserting '{}' in line number: {}", new Object[]{command.text1, command.lineNumber});
+        return line + LINE_SEPARATOR + command.text1;
     }
 
-    private String executeCommand(String line, PomUpdateCommand command) {
-        switch (command.commandType) {
-        case REPLACE:
-            LOG.debug("Replacing '{}' with '{}' in line number: {}", new Object[] { command.text1, command.text2, command.lineNumber });
-            return line.replaceAll(command.text1, command.text2);
-        case INSERT:
-            LOG.debug("Inserting '{}' in line number: {}", new Object[] { command.text1, command.lineNumber });
-            return line + LINE_SEPARATOR + command.text1;
-        }
+    return line;
+  }
 
-        return line;
+  private enum UPDATE_COMMAND_TYPE {
+    INSERT, REPLACE
+  }
+
+  private static class PomUpdateCommand {
+
+    int lineNumber;
+    UPDATE_COMMAND_TYPE commandType;
+    String text1;
+    String text2;
+
+    public PomUpdateCommand(int lineNumber, UPDATE_COMMAND_TYPE commandType, String text1, String text2) {
+      this.lineNumber = lineNumber;
+      this.commandType = commandType;
+      this.text1 = text1;
+      this.text2 = text2;
     }
 
-    private enum UPDATE_COMMAND_TYPE {
-        INSERT, REPLACE
-    }
-
-    private static class PomUpdateCommand {
-
-        int lineNumber;
-        UPDATE_COMMAND_TYPE commandType;
-        String text1;
-        String text2;
-
-        public PomUpdateCommand(int lineNumber, UPDATE_COMMAND_TYPE commandType, String text1, String text2) {
-            this.lineNumber = lineNumber;
-            this.commandType = commandType;
-            this.text1 = text1;
-            this.text2 = text2;
-        }
-
-    }
+  }
 
 }

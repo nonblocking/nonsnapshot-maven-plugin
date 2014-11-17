@@ -22,38 +22,38 @@ import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
 /**
  * Methods to process the Maven depedency tree found in the Workspace.
- * 
+ *
  * @author Juergen Kofler
  */
 public interface DependencyTreeProcessor {
 
-    /**
-     * Build an dependency tree from given artifact list. 
-     * <br/><br/>
-     * Replace all parent, children and dependency references through references of actual
-     * WorkspaceArtifacts from the given list.
-     * <br/><br/>
-     * Returns a list of root artifacts, with parent == null.  
-     * 
-     * @param artifacts List<MavenModule - List of all workspace artifacts
-     * @return List<WorkspaceArtifact>
-     */
-    List<MavenModule> buildDependencyTree(List<MavenModule> artifacts);
-    
-    /**
-     * Mark all artifacts with dirty dependencies dirty.
-     * 
-     * @param artifacts List<MavenModule>
-     * @return boolean True if any new artifacts have been marked dirty
-     */
-    boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts);
-    
-    /**
-     * Print the artifact tree found in the workspace for debug purposes.
-     * 
-     * @param rootArtifacts List<MavenModule>
-     * @param printStream PrintStream
-     */
-    void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream);
-    
+  /**
+   * Build an dependency tree from given artifact list.
+   * <br/><br/>
+   * Replace all parent, children and dependency references through references of actual
+   * WorkspaceArtifacts from the given list.
+   * <br/><br/>
+   * Returns a list of root artifacts, with parent == null.
+   *
+   * @param artifacts List<MavenModule - List of all workspace artifacts
+   * @return List<WorkspaceArtifact>
+   */
+  List<MavenModule> buildDependencyTree(List<MavenModule> artifacts);
+
+  /**
+   * Mark all artifacts with dirty dependencies dirty.
+   *
+   * @param artifacts List<MavenModule>
+   * @return boolean True if any new artifacts have been marked dirty
+   */
+  boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts);
+
+  /**
+   * Print the artifact tree found in the workspace for debug purposes.
+   *
+   * @param rootArtifacts List<MavenModule>
+   * @param printStream   PrintStream
+   */
+  void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream);
+
 }

@@ -22,33 +22,32 @@ import org.apache.maven.model.Model;
 
 /**
  * Handler for Maven POM access and modification.
- * 
+ *
  * @author Juergen Kofler
  */
 public interface MavenPomHandler {
 
+  /**
+   * Convert given POM model to a WorkspaceArtifact object.
+   *
+   * @param model Model
+   * @return WorkspaceArtifact
+   */
+  MavenModule readArtifact(Model model);
 
-    /**
-     * Convert given POM model to a WorkspaceArtifact object.
-     *
-     * @param model Model
-     * @return WorkspaceArtifact
-     */
-    MavenModule readArtifact(Model model);
+  /**
+   * Read the POM model from given file and return a completely filled WorkspaceArtifact object.
+   *
+   * @param pomFile File
+   * @return WorkspaceArtifact
+   */
+  MavenModule readArtifact(File pomFile);
 
-    /**
-     * Read the POM model from given file and return a completely filled WorkspaceArtifact object. 
-     * 
-     * @param pomFile File
-     * @return WorkspaceArtifact
-     */
-    MavenModule readArtifact(File pomFile);
-
-    /**
-     * Update the project version and all the versions of dirty dependencies.
-     * 
-     * @param workspaceArtifact WorkspaceArtifact
-     */
-    void updateArtifact(MavenModule workspaceArtifact);
+  /**
+   * Update the project version and all the versions of dirty dependencies.
+   *
+   * @param workspaceArtifact WorkspaceArtifact
+   */
+  void updateArtifact(MavenModule workspaceArtifact);
 
 }

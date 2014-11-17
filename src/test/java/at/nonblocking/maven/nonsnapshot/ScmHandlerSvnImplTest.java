@@ -15,71 +15,71 @@ import at.nonblocking.maven.nonsnapshot.impl.ScmHandlerSvnImpl;
 
 @Ignore
 public class ScmHandlerSvnImplTest {
-    
-    private static final String SVN_USER = "???";
-    private static final String SVN_PASSWORD = "???";
-    private static final String SVN_TEST_FOLDER = "???";
 
-    @BeforeClass
-    public static void setupLog() {
-        StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-    }
-    
-    @Test
-    public void testGetRevision() throws Exception {
-        File path = new File(SVN_TEST_FOLDER);
+  private static final String SVN_USER = "???";
+  private static final String SVN_PASSWORD = "???";
+  private static final String SVN_TEST_FOLDER = "???";
 
-        ScmHandler scmService = new ScmHandlerSvnImpl();
-        scmService.setCredentials(SVN_USER, SVN_PASSWORD);
+  @BeforeClass
+  public static void setupLog() {
+    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
+  }
 
-        assertTrue(Long.valueOf(scmService.getRevisionId(path)) > 0);
-    }
+  @Test
+  public void testGetRevision() throws Exception {
+    File path = new File(SVN_TEST_FOLDER);
 
-    @Test
-    public void testNoWorkingCopy() throws Exception {
-        File path = new File("target");
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.setCredentials(SVN_USER, SVN_PASSWORD);
 
-        ScmHandler scmService = new ScmHandlerSvnImpl();
-        scmService.setCredentials(SVN_USER, SVN_PASSWORD);
-        
-        assertFalse(scmService.isWorkingCopy(path));
-    }
+    assertTrue(Long.valueOf(scmService.getRevisionId(path)) > 0);
+  }
 
-    @Test
-    public void testNextRevision() throws Exception {
-        File path = new File(SVN_TEST_FOLDER);
+  @Test
+  public void testNoWorkingCopy() throws Exception {
+    File path = new File("target");
 
-        ScmHandler scmService = new ScmHandlerSvnImpl();
-        scmService.setCredentials(SVN_USER, SVN_PASSWORD);
-        
-        long nextRevision = Long.valueOf(scmService.getNextRevisionId(path));
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.setCredentials(SVN_USER, SVN_PASSWORD);
 
-        assertTrue(nextRevision > 0);
-    }
+    assertFalse(scmService.isWorkingCopy(path));
+  }
 
-    @Test
-    public void testLastCommitTimestamp() throws Exception {
-        File path = new File(SVN_TEST_FOLDER);
+  @Test
+  public void testNextRevision() throws Exception {
+    File path = new File(SVN_TEST_FOLDER);
 
-        ScmHandler scmService = new ScmHandlerSvnImpl();
-        scmService.setCredentials(SVN_USER, SVN_PASSWORD);
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.setCredentials(SVN_USER, SVN_PASSWORD);
 
-        Date lastCommitDate = scmService.getLastCommitTimestamp(path);
+    long nextRevision = Long.valueOf(scmService.getNextRevisionId(path));
 
-        assertNotNull(lastCommitDate);
+    assertTrue(nextRevision > 0);
+  }
 
-        System.out.println(lastCommitDate);
-    }
-    
-    @Test
-    public void testCommit() throws Exception {        
-        ScmHandler scmService = new ScmHandlerSvnImpl();
-        scmService.setCredentials(SVN_USER, SVN_PASSWORD);
-        
-        scmService.commitFiles(Arrays.asList( 
-                new File("/Users/jkofler/development/ws-nonsnapshot/build-test-one/pom.xml"),
-                new File("/Users/jkofler/development/ws-nonsnapshot/build-test-two/pom.xml")), "test");
-    }
-    
-    
+  @Test
+  public void testLastCommitTimestamp() throws Exception {
+    File path = new File(SVN_TEST_FOLDER);
+
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.setCredentials(SVN_USER, SVN_PASSWORD);
+
+    Date lastCommitDate = scmService.getLastCommitTimestamp(path);
+
+    assertNotNull(lastCommitDate);
+
+    System.out.println(lastCommitDate);
+  }
+
+  @Test
+  public void testCommit() throws Exception {
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.setCredentials(SVN_USER, SVN_PASSWORD);
+
+    scmService.commitFiles(Arrays.asList(
+        new File("/Users/jkofler/development/ws-nonsnapshot/build-test-one/pom.xml"),
+        new File("/Users/jkofler/development/ws-nonsnapshot/build-test-two/pom.xml")), "test");
+  }
+
+
 }

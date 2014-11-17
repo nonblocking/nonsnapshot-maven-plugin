@@ -4,6 +4,7 @@ import at.nonblocking.maven.nonsnapshot.impl.ModuleTraverserDefaultImpl;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
+
 import static junit.framework.Assert.*;
 
 import java.io.File;

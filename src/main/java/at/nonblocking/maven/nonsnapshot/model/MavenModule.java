@@ -21,93 +21,93 @@ import java.util.List;
 
 /**
  * Represents a Maven module in the build tree
- * 
+ *
  * @author Juergen Kofler
  */
 public class MavenModule extends MavenArtifact {
 
-    private File pomFile;
+  private File pomFile;
 
-    private boolean insertVersionTag;
-    private int versionLocation;
-        
-    private MavenArtifact parent;
-    private int parentVersionLocation;
+  private boolean insertVersionTag;
+  private int versionLocation;
 
-    private List<MavenModule> children = new ArrayList<MavenModule>();
+  private MavenArtifact parent;
+  private int parentVersionLocation;
 
-    private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
+  private List<MavenModule> children = new ArrayList<MavenModule>();
 
-    private String newVersion;
+  private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
 
-    private boolean dirty;
+  private String newVersion;
 
-    public MavenModule(File pomFile, String groupId, String artifactId, String version) {
-        super(groupId, artifactId, version);
-        this.pomFile = pomFile;
-    }
+  private boolean dirty;
 
-    public File getPomFile() {
-        return pomFile;
-    }
+  public MavenModule(File pomFile, String groupId, String artifactId, String version) {
+    super(groupId, artifactId, version);
+    this.pomFile = pomFile;
+  }
 
-    public void setPomFile(File pomFile) {
-        this.pomFile = pomFile;
-    }
+  public File getPomFile() {
+    return pomFile;
+  }
 
-    public boolean isInsertVersionTag() {
-        return insertVersionTag;
-    }
+  public void setPomFile(File pomFile) {
+    this.pomFile = pomFile;
+  }
 
-    public void setInsertVersionTag(boolean insertVersionTag) {
-        this.insertVersionTag = insertVersionTag;
-    }
+  public boolean isInsertVersionTag() {
+    return insertVersionTag;
+  }
 
-    public int getVersionLocation() {
-        return versionLocation;
-    }
+  public void setInsertVersionTag(boolean insertVersionTag) {
+    this.insertVersionTag = insertVersionTag;
+  }
 
-    public void setVersionLocation(int versionLocation) {
-        this.versionLocation = versionLocation;
-    }
+  public int getVersionLocation() {
+    return versionLocation;
+  }
 
-    public int getParentVersionLocation() {
-        return parentVersionLocation;
-    }
+  public void setVersionLocation(int versionLocation) {
+    this.versionLocation = versionLocation;
+  }
 
-    public void setParentVersionLocation(int parentVersionLocation) {
-        this.parentVersionLocation = parentVersionLocation;
-    }
+  public int getParentVersionLocation() {
+    return parentVersionLocation;
+  }
 
-    public MavenArtifact getParent() {
-        return parent;
-    }
+  public void setParentVersionLocation(int parentVersionLocation) {
+    this.parentVersionLocation = parentVersionLocation;
+  }
 
-    public void setParent(MavenArtifact parent) {
-        this.parent = parent;
-    }
+  public MavenArtifact getParent() {
+    return parent;
+  }
 
-    public boolean isDirty() {
-        return dirty;
-    }
+  public void setParent(MavenArtifact parent) {
+    this.parent = parent;
+  }
 
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
+  public boolean isDirty() {
+    return dirty;
+  }
 
-    public List<MavenModule> getChildren() {
-        return children;
-    }
+  public void setDirty(boolean dirty) {
+    this.dirty = dirty;
+  }
 
-    public List<MavenModuleDependency> getDependencies() {
-        return dependencies;
-    }
+  public List<MavenModule> getChildren() {
+    return children;
+  }
 
-    public String getNewVersion() {
-        return newVersion;
-    }
+  public List<MavenModuleDependency> getDependencies() {
+    return dependencies;
+  }
 
-    public void setNewVersion(String newVersion) {
-        this.newVersion = newVersion;
-    }
+  public String getNewVersion() {
+    return newVersion;
+  }
+
+  public void setNewVersion(String newVersion) {
+    this.newVersion = newVersion;
+  }
 }

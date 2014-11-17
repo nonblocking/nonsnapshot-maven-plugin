@@ -18,33 +18,33 @@ package at.nonblocking.maven.nonsnapshot.model;
 
 /**
  * A dependency of a Maven module
- * 
+ *
  * @author Juergen Kofler
  */
 public class MavenModuleDependency {
 
-    private int versionLocation;
-    private MavenArtifact artifact;
+  private int versionLocation;
+  private MavenArtifact artifact;
 
-    public MavenModuleDependency(int versionLocation, MavenArtifact artifact) {
-        this.versionLocation = versionLocation;
-        this.artifact = artifact;
-    }
+  public MavenModuleDependency(int versionLocation, MavenArtifact artifact) {
+    this.versionLocation = versionLocation;
+    this.artifact = artifact;
+  }
 
-    public int getVersionLocation() {
-        return versionLocation;
-    }
+  public int getVersionLocation() {
+    return versionLocation;
+  }
 
-    public void setVersionLocation(int versionLocation) {
-        this.versionLocation = versionLocation;
-    }
+  public void setVersionLocation(int versionLocation) {
+    this.versionLocation = versionLocation;
+  }
 
-    public MavenArtifact getArtifact() {
-        return artifact;
-    }
+  public MavenArtifact getArtifact() {
+    return artifact;
+  }
 
-    public void setArtifact(MavenArtifact artifact) {
-        this.artifact = artifact;
-    }
+  public void setArtifact(MavenArtifact artifact) {
+    this.artifact = artifact;
+  }
 
 }

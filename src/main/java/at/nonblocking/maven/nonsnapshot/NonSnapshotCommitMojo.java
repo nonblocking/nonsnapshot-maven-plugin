@@ -29,66 +29,66 @@ import org.slf4j.LoggerFactory;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
 /**
- * Goal to commit changed POM files if the updateVersions goal was called with deferPomCommit = true 
- * 
+ * Goal to commit changed POM files if the updateVersions goal was called with deferPomCommit = true
+ *
  * @author Juergen Kofler
  */
 @Mojo(name = "commitVersions", aggregator = true)
 public class NonSnapshotCommitMojo extends NonSnapshotBaseMojo {
 
-    private static Logger LOG = LoggerFactory.getLogger(NonSnapshotCommitMojo.class);
+  private static Logger LOG = LoggerFactory.getLogger(NonSnapshotCommitMojo.class);
 
-    @Override
-    protected void internalExecute() {
-        File dirtyModulesRegistryFile = getDirtyModulesRegistryFile();
-        LOG.debug("Reading POM files to commit from: {}", dirtyModulesRegistryFile.getAbsolutePath());
-        
-        if (!dirtyModulesRegistryFile.exists()) {
-            LOG.info("File {} does not exist. Doing nothing.", dirtyModulesRegistryFile.getAbsolutePath());
-            return;
-        }
+  @Override
+  protected void internalExecute() {
+    File dirtyModulesRegistryFile = getDirtyModulesRegistryFile();
+    LOG.debug("Reading POM files to commit from: {}", dirtyModulesRegistryFile.getAbsolutePath());
 
-        List<File> pomsToCommit = readPomFileList(dirtyModulesRegistryFile);
-        if (pomsToCommit.size() == 0) {
-            return;
-        }
-        
-        try {
-            LOG.info("Committing {} POM files", pomsToCommit.size());
-            getScmHandler().commitFiles(pomsToCommit, "Nonsnapshot Plugin: Version of " + pomsToCommit.size() + " modules updated");
-        } catch (RuntimeException e) {
-            if (isDontFailOnCommit()) {
-                LOG.warn("Error occurred during commit, ignoring it since dontFailOnCommit=true.", e);
-            } else {
-                throw e;
-            }
-        }
+    if (!dirtyModulesRegistryFile.exists()) {
+      LOG.info("File {} does not exist. Doing nothing.", dirtyModulesRegistryFile.getAbsolutePath());
+      return;
     }
 
-    private List<File> readPomFileList(File inputFile) {
-        List<File> pomFileList = new ArrayList<>();
-        File baseDir = getMavenProject().getBasedir();
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                File pom = new File(baseDir, line + "/pom.xml");
-                if (!pomFileList.contains(pom)) {
-                    pomFileList.add(pom);
-                }
-            }
-
-            reader.close();
-
-            LOG.info("Deleting dirty modules registry file: {}", inputFile.getAbsolutePath());
-            inputFile.delete();
-            
-            return pomFileList;
-
-        } catch (IOException e) {
-            throw new NonSnapshotPluginException("Failed to read dirty modules registry file!", e);
-        }
+    List<File> pomsToCommit = readPomFileList(dirtyModulesRegistryFile);
+    if (pomsToCommit.size() == 0) {
+      return;
     }
+
+    try {
+      LOG.info("Committing {} POM files", pomsToCommit.size());
+      getScmHandler().commitFiles(pomsToCommit, "Nonsnapshot Plugin: Version of " + pomsToCommit.size() + " modules updated");
+    } catch (RuntimeException e) {
+      if (isDontFailOnCommit()) {
+        LOG.warn("Error occurred during commit, ignoring it since dontFailOnCommit=true.", e);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  private List<File> readPomFileList(File inputFile) {
+    List<File> pomFileList = new ArrayList<>();
+    File baseDir = getMavenProject().getBasedir();
+
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+
+      String line;
+      while ((line = reader.readLine()) != null) {
+        File pom = new File(baseDir, line + "/pom.xml");
+        if (!pomFileList.contains(pom)) {
+          pomFileList.add(pom);
+        }
+      }
+
+      reader.close();
+
+      LOG.info("Deleting dirty modules registry file: {}", inputFile.getAbsolutePath());
+      inputFile.delete();
+
+      return pomFileList;
+
+    } catch (IOException e) {
+      throw new NonSnapshotPluginException("Failed to read dirty modules registry file!", e);
+    }
+  }
 }

@@ -22,17 +22,17 @@ import java.util.List;
 
 /**
  * Traverses all nested Maven modules
- * 
+ *
  * @author Juergen Kofler
  */
 public interface ModuleTraverser {
 
-    /**
-     * Find (recursively) all Maven modules
-     * 
-     * @param baseProject MavenProject
-     * @return List<Model>
-     */
-    List<Model> findAllModules(MavenProject baseProject);
-    
+  /**
+   * Find (recursively) all Maven modules
+   *
+   * @param baseProject MavenProject
+   * @return List<Model>
+   */
+  List<Model> findAllModules(MavenProject baseProject);
+
 }
