@@ -69,12 +69,10 @@ public class ScmHandlerGitImpl implements ScmHandler {
     }
 
     try {
-      ObjectId master = this.localRepo.resolve(Constants.MASTER);
       String modulePath = PathUtil.relativePath(this.baseDir, moduleDirectory);
 
-      LogCommand logCommand = git
+      LogCommand logCommand = this.git
           .log()
-          .add(master)
           .setMaxCount(100);
 
       if (!modulePath.isEmpty()) {
