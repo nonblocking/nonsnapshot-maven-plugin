@@ -18,6 +18,7 @@ package at.nonblocking.maven.nonsnapshot;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Handle the access to the SCM (Source Code Management) system.
@@ -78,7 +79,8 @@ public interface ScmHandler {
    * @param baseDir File
    * @param scmUser     String
    * @param scmPassword String
+   * @param properties Properties
    */
-  void init(File baseDir, String scmUser, String scmPassword);
+  void init(File baseDir, String scmUser, String scmPassword, Properties properties);
 
 }

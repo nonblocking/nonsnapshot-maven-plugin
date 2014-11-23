@@ -18,6 +18,7 @@ package at.nonblocking.maven.nonsnapshot.impl;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
+import org.tmatesoft.svn.core.internal.wc17.SVNWCContext;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
@@ -169,7 +171,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public void init(File localRepoPath, String scmUser, String scmPassword) {
+  public void init(File localRepoPath, String scmUser, String scmPassword, Properties properties) {
     if (StringUtils.isEmpty(scmUser) || StringUtils.isEmpty(scmPassword)) {
       throw new NonSnapshotPluginException("Parameters 'scmUser' and 'scmPassword' are required!");
     }

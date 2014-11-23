@@ -30,7 +30,7 @@ public class ScmHandlerSvnImplTest {
     File path = new File(SVN_TEST_FOLDER);
 
     ScmHandler scmService = new ScmHandlerSvnImpl();
-    scmService.init(null, SVN_USER, SVN_PASSWORD);
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
     boolean changes = scmService.checkChangesSinceRevision(path, "26505");
 
@@ -42,7 +42,7 @@ public class ScmHandlerSvnImplTest {
     File path = new File(SVN_TEST_FOLDER);
 
     ScmHandler scmService = new ScmHandlerSvnImpl();
-    scmService.init(null, SVN_USER, SVN_PASSWORD);
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
     boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 9, 26));
 
@@ -54,7 +54,7 @@ public class ScmHandlerSvnImplTest {
     File path = new File("target");
 
     ScmHandler scmService = new ScmHandlerSvnImpl();
-    scmService.init(null, SVN_USER, SVN_PASSWORD);
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
     assertFalse(scmService.isWorkingCopy(path));
   }
@@ -64,7 +64,7 @@ public class ScmHandlerSvnImplTest {
     File path = new File(SVN_TEST_FOLDER);
 
     ScmHandler scmService = new ScmHandlerSvnImpl();
-    scmService.init(null, SVN_USER, SVN_PASSWORD);
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
     long nextRevision = Long.valueOf(scmService.getNextRevisionId(path));
 
@@ -74,7 +74,7 @@ public class ScmHandlerSvnImplTest {
   @Test
   public void testCommit() throws Exception {
     ScmHandler scmService = new ScmHandlerSvnImpl();
-    scmService.init(null, SVN_USER, SVN_PASSWORD);
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
     scmService.commitFiles(Arrays.asList(
         new File("/Users/jkofler/development/ws-nonsnapshot/build-test-one/pom.xml"),

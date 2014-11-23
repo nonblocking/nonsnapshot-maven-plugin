@@ -23,8 +23,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -36,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * GIT implementation of {@link at.nonblocking.maven.nonsnapshot.ScmHandler} based on JGit.
@@ -51,6 +50,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
   private FileRepository localRepo;
   private Git git;
   private CredentialsProvider credentialsProvider;
+  private boolean doPush = true;
 
   @Override
   public boolean isWorkingCopy(File path) {
@@ -126,11 +126,13 @@ public class ScmHandlerGitImpl implements ScmHandler {
           .setMessage(commitMessage)
           .call();
 
-      LOG.debug("Git: Pushing changes");
-      this.git
-          .push()
-          .setCredentialsProvider(this.credentialsProvider)
-          .call();
+      if (this.doPush) {
+        LOG.debug("Git: Pushing changes");
+        this.git
+            .push()
+            .setCredentialsProvider(this.credentialsProvider)
+            .call();
+      }
 
     } catch (Exception e) {
       throw new NonSnapshotPluginException("Failed to commit files!", e);
@@ -139,7 +141,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
 
 
   @Override
-  public void init(File baseDir, String scmUser, String scmPassword) {
+  public void init(File baseDir, String scmUser, String scmPassword, Properties properties) {
     this.baseDir = findGitRepo(baseDir);
     if (this.baseDir == null) {
       LOG.error("Project seems not be within a GIT repository!");
@@ -154,6 +156,11 @@ public class ScmHandlerGitImpl implements ScmHandler {
       if (scmPassword != null && !scmPassword.trim().isEmpty()) {
         this.credentialsProvider = new UsernamePasswordAndPassphraseCredentialProvider(scmUser, scmPassword);
       }
+      if (properties != null && "false".equals(properties.getProperty("gitDoPush"))) {
+        this.doPush = false;
+        LOG.info("GIT push is disabled");
+      }
+
     } catch (Exception e) {
       LOG.error("Project seems not be within a GIT repository!", e);
     }
@@ -208,7 +215,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
             continue;
           }
         }
-        throw new UnsupportedCredentialItem(uri, i.getClass().getName()  + ":" + i.getPromptText());
+        throw new UnsupportedCredentialItem(uri, i.getClass().getName() + ":" + i.getPromptText());
       }
       return true;
     }

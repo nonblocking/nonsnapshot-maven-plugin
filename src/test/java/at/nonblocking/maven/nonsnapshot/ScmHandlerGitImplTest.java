@@ -30,7 +30,7 @@ public class ScmHandlerGitImplTest {
     File path = new File(GIT_TEST_FOLDER);
 
     ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, null);
+    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
 
     boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 7, 26));
 
@@ -42,7 +42,7 @@ public class ScmHandlerGitImplTest {
     File path = new File("target");
 
     ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, null);
+    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
 
     assertFalse(scmService.isWorkingCopy(path));
   }
@@ -50,7 +50,7 @@ public class ScmHandlerGitImplTest {
   @Test
   public void testCommit() throws Exception {
     ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, SCM_PASSPHRASE);
+    scmService.init(new File(GIT_TEST_FOLDER), null, SCM_PASSPHRASE, null);
 
     File file1 = new File(GIT_TEST_FOLDER + "/test1.txt");
     File file2 = new File(GIT_TEST_FOLDER + "/test2.txt");

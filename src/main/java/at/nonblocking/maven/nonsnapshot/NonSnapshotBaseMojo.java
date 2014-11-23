@@ -17,6 +17,7 @@ package at.nonblocking.maven.nonsnapshot;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -70,6 +71,9 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
    */
   @Parameter
   private String scmPassword;
+
+  @Parameter(defaultValue = "true")
+  private boolean gitDoPush;
 
   /**
    * Defer the actual commit until nonsnapshot:commit is called.
@@ -172,7 +176,10 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
       LOG.debug("Found ScmHandler: {}", this.scmHandler.getClass());
     }
 
-    this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword);
+    Properties properties = new Properties();
+    properties.setProperty("gitDoPush", String.valueOf(this.gitDoPush));
+
+    this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword, properties);
   }
 
   protected File getDirtyModulesRegistryFile() {
@@ -206,6 +213,14 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
   public void setScmPassword(String scmPassword) {
     this.scmPassword = scmPassword;
+  }
+
+  public boolean isGitDoPush() {
+    return gitDoPush;
+  }
+
+  public void setGitDoPush(boolean gitDoPush) {
+    this.gitDoPush = gitDoPush;
   }
 
   public boolean isDeferPomCommit() {
