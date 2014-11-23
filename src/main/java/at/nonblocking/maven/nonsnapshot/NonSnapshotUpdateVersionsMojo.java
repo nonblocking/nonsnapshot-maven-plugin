@@ -157,7 +157,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
           if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
             boolean changes = getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), qualifierString);
             if (changes) {
-              LOG.info("Module {}:{}: Revision nr is different from the revision nr in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+              LOG.info("Module {}:{}: Revision number is different from the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }
           } else {
@@ -176,7 +176,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             }
 
             if (changes) {
-              LOG.info("Module {}:{}: Last committed timestamp is different from the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+              LOG.info("Module {}:{}: There were commits after the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }
           }

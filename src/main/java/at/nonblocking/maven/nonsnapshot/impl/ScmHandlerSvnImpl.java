@@ -90,7 +90,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
       return true;
 
     } catch (SVNException e) {
-      LOG.warn("Failed to check changes for path: {}: {}", moduleDirectory.getAbsolutePath(), e.getMessage());
+      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
       return true;
     }
 
@@ -121,7 +121,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
           });
 
     } catch (SVNException e) {
-      LOG.warn("Failed to check changes for path: {}: {}", moduleDirectory.getAbsolutePath(), e.getMessage());
+      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
       return true;
     }
 

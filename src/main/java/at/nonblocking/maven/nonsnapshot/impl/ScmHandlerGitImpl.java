@@ -95,7 +95,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
       }
 
     } catch (Exception e) {
-      LOG.warn("Failed to check changes for path: {}: {}", moduleDirectory.getAbsolutePath(), e.getMessage());
+      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
       return true;
     }
 
