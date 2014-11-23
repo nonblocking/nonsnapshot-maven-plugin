@@ -21,8 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -271,13 +269,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     LOG.info("Writing dirty modules registry to: {}", dirtyModulesRegistryFile.getAbsolutePath());
 
     try (PrintWriter writer = new PrintWriter(new FileOutputStream(dirtyModulesRegistryFile, false))) {
-
-      Path basePath = Paths.get(getMavenProject().getBasedir().getCanonicalPath());
-
       for (File pomFile : pomFileList) {
-        Path modulePath = Paths.get(pomFile.getParentFile().getCanonicalPath());
-        String relativeModuleDir = basePath.relativize(modulePath).toString();
-        relativeModuleDir = relativeModuleDir.replaceAll("\\\\", "/");
+        String relativeModuleDir = PathUtil.relativePath(getMavenProject().getBasedir(), pomFile.getParentFile());
         if (relativeModuleDir.isEmpty()) {
           relativeModuleDir = ".";
         }
@@ -293,11 +286,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     StringBuilder projectPaths = new StringBuilder();
 
     try {
-      Path basePath = Paths.get(getMavenProject().getBasedir().getCanonicalPath());
       for (File pomFile : pomFileList) {
-        Path modulePath = Paths.get(pomFile.getParentFile().getCanonicalPath());
-        String relativeModuleDir = basePath.relativize(modulePath).toString();
-        relativeModuleDir = relativeModuleDir.replaceAll("\\\\", "/");
+        String relativeModuleDir = PathUtil.relativePath(getMavenProject().getBasedir(), pomFile.getParentFile());
         if (projectPaths.length() != 0) {
           relativeModuleDir = "," + relativeModuleDir;
         }

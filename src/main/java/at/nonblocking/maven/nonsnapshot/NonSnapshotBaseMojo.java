@@ -172,7 +172,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
       LOG.debug("Found ScmHandler: {}", this.scmHandler.getClass());
     }
 
-    this.scmHandler.setCredentials(this.scmUser, this.scmPassword);
+    this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword);
   }
 
   protected File getDirtyModulesRegistryFile() {

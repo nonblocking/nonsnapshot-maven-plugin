@@ -75,9 +75,10 @@ public interface ScmHandler {
   /**
    * Set the repository credentials
    *
+   * @param baseDir File
    * @param scmUser     String
    * @param scmPassword String
    */
-  void setCredentials(String scmUser, String scmPassword);
+  void init(File baseDir, String scmUser, String scmPassword);
 
 }

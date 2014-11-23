@@ -36,7 +36,7 @@ import at.nonblocking.maven.nonsnapshot.ScmHandler;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
 /**
- * SVN implementation for {@link ScmHandler} based on SvnKit.
+ * SVN implementation of {@link ScmHandler} based on SvnKit.
  *
  * @author Juergen Kofler
  */
@@ -169,7 +169,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public void setCredentials(String scmUser, String scmPassword) {
+  public void init(File localRepoPath, String scmUser, String scmPassword) {
     if (StringUtils.isEmpty(scmUser) || StringUtils.isEmpty(scmPassword)) {
       throw new NonSnapshotPluginException("Parameters 'scmUser' and 'scmPassword' are required!");
     }
