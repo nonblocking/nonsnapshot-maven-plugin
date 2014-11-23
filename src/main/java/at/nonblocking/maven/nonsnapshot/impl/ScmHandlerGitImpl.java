@@ -18,15 +18,14 @@ package at.nonblocking.maven.nonsnapshot.impl;
 import at.nonblocking.maven.nonsnapshot.PathUtil;
 import at.nonblocking.maven.nonsnapshot.ScmHandler;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
+import com.jcraft.jsch.Session;
 import org.codehaus.plexus.component.annotations.Component;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.CredentialItem;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.transport.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +50,15 @@ public class ScmHandlerGitImpl implements ScmHandler {
   private Git git;
   private CredentialsProvider credentialsProvider;
   private boolean doPush = true;
+
+  static {
+    SshSessionFactory.setInstance(new JschConfigSessionFactory() {
+      @Override
+      protected void configure(OpenSshConfig.Host hc, Session session) {
+        session.setConfig("StrictHostKeyChecking", "no");
+      }
+    });
+  }
 
   @Override
   public boolean isWorkingCopy(File path) {
