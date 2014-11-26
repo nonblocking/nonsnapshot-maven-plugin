@@ -20,6 +20,7 @@ public class NonSnapshotCommitMojoTest {
   private DependencyTreeProcessor mockDependencyTreeProcessor = mock(DependencyTreeProcessor.class);
   private MavenPomHandler mockMavenPomHandler = mock(MavenPomHandler.class);
   private ScmHandler mockScmHandler = mock(ScmHandler.class);
+  private UpstreamDependencyHandler mockUpstreamDependencyHandler = mock(UpstreamDependencyHandler.class);
 
   @BeforeClass
   public static void setupLog() {
@@ -39,6 +40,7 @@ public class NonSnapshotCommitMojoTest {
     this.nonSnapshotMojo.setDependencyTreeProcessor(this.mockDependencyTreeProcessor);
     this.nonSnapshotMojo.setMavenPomHandler(this.mockMavenPomHandler);
     this.nonSnapshotMojo.setScmHandler(this.mockScmHandler);
+    this.nonSnapshotMojo.setUpstreamDependencyHandler(this.mockUpstreamDependencyHandler);
   }
 
   @Test

@@ -106,7 +106,7 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
   private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
 
   @Parameter
-  private List<String> upstreamGroupIds;
+  private List<String> upstreamDependencies;
 
   /**
    * Generate a shell script to incrementally build only dirty artifacts (Maven > 3.2.1 only)
@@ -129,6 +129,9 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
   @Component(role = DependencyTreeProcessor.class, hint = "default")
   private DependencyTreeProcessor dependencyTreeProcessor;
 
+  @Component(role = UpstreamDependencyHandler.class, hint = "default")
+  private UpstreamDependencyHandler upstreamDependencyHandler;
+
   @Component
   private RepositorySystem repositorySystem;
 
@@ -137,6 +140,8 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
   @Parameter(defaultValue = "${project.remoteProjectRepositories}")
   private List<RemoteRepository> remoteRepositories;
+
+  private List<ProcessedUpstreamDependency> processedUpstreamDependencies;
 
   private ScmHandler scmHandler;
 
@@ -180,6 +185,8 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     properties.setProperty("gitDoPush", String.valueOf(this.gitDoPush));
 
     this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword, properties);
+
+    this.processedUpstreamDependencies = this.upstreamDependencyHandler.processDependencyList(getUpstreamDependencies());
   }
 
   protected File getDirtyModulesRegistryFile() {
@@ -279,12 +286,12 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     this.timestampQualifierPattern = timestampQualifierPattern;
   }
 
-  public List<String> getUpstreamGroupIds() {
-    return upstreamGroupIds;
+  public List<String> getUpstreamDependencies() {
+    return upstreamDependencies;
   }
 
-  public void setUpstreamGroupIds(List<String> upstreamGroupIds) {
-    this.upstreamGroupIds = upstreamGroupIds;
+  public void setUpstreamDependencies(List<String> upstreamDependencies) {
+    this.upstreamDependencies = upstreamDependencies;
   }
 
   public boolean isGenerateIncrementalBuildScripts() {
@@ -327,6 +334,14 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     this.dependencyTreeProcessor = dependencyTreeProcessor;
   }
 
+  public UpstreamDependencyHandler getUpstreamDependencyHandler() {
+    return upstreamDependencyHandler;
+  }
+
+  public void setUpstreamDependencyHandler(UpstreamDependencyHandler upstreamDependencyHandler) {
+    this.upstreamDependencyHandler = upstreamDependencyHandler;
+  }
+
   public RepositorySystem getRepositorySystem() {
     return repositorySystem;
   }
@@ -349,6 +364,14 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
   public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
     this.remoteRepositories = remoteRepositories;
+  }
+
+  public List<ProcessedUpstreamDependency> getProcessedUpstreamDependencies() {
+    return processedUpstreamDependencies;
+  }
+
+  public void setProcessedUpstreamDependencies(List<ProcessedUpstreamDependency> processedUpstreamDependencies) {
+    this.processedUpstreamDependencies = processedUpstreamDependencies;
   }
 
   public ScmHandler getScmHandler() {
