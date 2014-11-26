@@ -19,14 +19,15 @@ The aim of this plugin is to get rid of SNAPSHOT versions and periodically auto-
 
 The algorithm works as follows:
 
-1. Collect all modules recursively
-2. Check all modules for changes (commits) since the last version update. If commits exist mark the module as dirty
+1. Collect all modules recursively.
+2. Check all modules for changes (commits) since the last version update. If commits exist mark the module as dirty.
 3. Resolve the latest upstream dependencies versions. If any newer version are available update the version accordingly
-    and mark the module as dirty
-4. Mark all modules as dirty which have dirty dependencies
-5. Rewrite the pom.xml of all dirty artifacts with the new version strings
-6. Optional: Generate a script for an incremental build of all dirty modules (Maven > 3.2.1 required).
-7. Commit all changed pom.xml files
+    and mark the module as dirty.
+4. Mark all modules as dirty which have dirty dependencies.
+5. Bump the version of all dirty modules.
+6. Rewrite the pom.xml of all modules with a new version.
+7. Optional: Generate a script for an incremental build of all dirty modules (Maven > 3.2.1 required).
+8. Commit all changed pom.xml files to SCM. This step can be deferred and done by a second goal.
 
 The generated artifact versions consist of a "base version", which can be configured,
 and the build timestamp or revision id (SVN only) as a qualifier. Examples:
@@ -58,8 +59,8 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 			<upstreamDependency>at.nonblocking:*:LATEST</upstreamDependency>
 			<!-- Examples -->
 			<!-- <upstreamDependency>at.nonblocking:*:2.10</upstreamDependency> -->
-			<!--<upstreamDependency>at.nonblocking:test-test2:2.10.3</upstreamDependency>-->
-			<!--<upstreamDependency>at.nonblocking:test-*:LATEST</upstreamDependency>-->
+			<!-- <upstreamDependency>at.nonblocking:test-test2:2.10.3</upstreamDependency>-->
+			<!-- <upstreamDependency>at.nonblocking:test-*:LATEST</upstreamDependency>-->
 		</upstreamDependencies>
 	</configuration>
 </plugin>
@@ -68,7 +69,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 
 ### Notes
 
-* The default SCM type is SVN
+* Supported SCM systems are SVN and GIT, default is SVN.
 * By the default timestamps are used as qualifiers
 * An upstream dependency is defined as *groupId:artifactId:baseVersion*. Whereas *groupId* and *artifactId* can contain
    wildcards. The *baseVersion* is the "prefix" of allowed versions. Examples:
@@ -77,7 +78,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
     * LATEST -> Always look for the latest (non snapshot!) version
 * The upstream dependency list is processed in order of their definition and the first match is taken. That allows
   it to define an exceptions from a wildcard rule like this:
-  
+
   ```xml
   	<upstreamDependency>at.nonblocking:test:2.3.4</upstreamDependency>
   	<upstreamDependency>at.nonblocking:*:LATEST</upstreamDependency>
