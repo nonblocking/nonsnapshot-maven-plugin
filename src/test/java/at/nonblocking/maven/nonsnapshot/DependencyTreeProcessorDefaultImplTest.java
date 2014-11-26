@@ -48,14 +48,9 @@ public class DependencyTreeProcessorDefaultImplTest {
 
     DependencyTreeProcessor dependencyTreeProcessor = new DependencyTreeProcessorDefaultImpl();
 
-    List<MavenModule> rootArtifacts = dependencyTreeProcessor.buildDependencyTree(artifacts);
+    dependencyTreeProcessor.buildDependencyTree(artifacts);
 
-    assertNotNull(rootArtifacts);
-    assertEquals(2, rootArtifacts.size());
-    assertEquals(2, rootArtifacts.get(0).getChildren().size());
-    assertEquals(0, rootArtifacts.get(1).getChildren().size());
-
-    dependencyTreeProcessor.printMavenModuleTree(rootArtifacts, System.out);
+    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
   }
 
   @Test
@@ -84,7 +79,7 @@ public class DependencyTreeProcessorDefaultImplTest {
     assertTrue(wsArtifact2.isDirty());
     assertTrue(wsArtifact3.isDirty());
 
-    dependencyTreeProcessor.printMavenModuleTree(artifacts, System.out);
+    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
   }
 
   @Test
@@ -118,6 +113,6 @@ public class DependencyTreeProcessorDefaultImplTest {
     assertTrue(wsArtifact3.isDirty());
     assertTrue(wsArtifact4.isDirty());
 
-    dependencyTreeProcessor.printMavenModuleTree(artifacts, System.out);
+    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
   }
 }

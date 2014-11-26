@@ -41,9 +41,7 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
   private static final Logger LOG = LoggerFactory.getLogger(DependencyTreeProcessorDefaultImpl.class);
 
   @Override
-  public List<MavenModule> buildDependencyTree(List<MavenModule> mavenModules) {
-    List<MavenModule> rootArtifacts = new ArrayList<>();
-
+  public void buildDependencyTree(List<MavenModule> mavenModules) {
     for (MavenModule mavenModule : mavenModules) {
       if (mavenModule.getParent() != null) {
         MavenModule parentModule = findArtifact(mavenModules, mavenModule.getParent().getGroupId(), mavenModule.getParent().getArtifactId());
@@ -51,8 +49,6 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
           parentModule.getChildren().add(mavenModule);
           mavenModule.setParent(parentModule);
         }
-      } else {
-        rootArtifacts.add(mavenModule);
       }
 
       for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
@@ -63,8 +59,6 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
         }
       }
     }
-
-    return rootArtifacts;
   }
 
   private MavenModule findArtifact(List<MavenModule> artifacts, String groupId, String artifactId) {
@@ -123,10 +117,8 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
   }
 
   @Override
-  public void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream) {
-    for (MavenModule rootArtifact : rootArtifacts) {
-      printTree(rootArtifact, printStream, 0);
-    }
+  public void printMavenModuleTree(MavenModule rootModule, PrintStream printStream) {
+    printTree(rootModule, printStream, 0);
   }
 
   private void printTree(MavenArtifact artifact, PrintStream printStream, int level) {

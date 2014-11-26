@@ -35,25 +35,24 @@ public interface DependencyTreeProcessor {
    * <br/><br/>
    * Returns a list of root artifacts, with parent == null.
    *
-   * @param artifacts List<MavenModule - List of all workspace artifacts
-   * @return List<WorkspaceArtifact>
+   * @param modules List<MavenModule - List of all workspace artifacts
    */
-  List<MavenModule> buildDependencyTree(List<MavenModule> artifacts);
+  void buildDependencyTree(List<MavenModule> modules);
 
   /**
    * Mark all artifacts with dirty dependencies dirty.
    *
-   * @param artifacts List<MavenModule>
+   * @param modules List<MavenModule>
    * @return boolean True if any new artifacts have been marked dirty
    */
-  boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> artifacts);
+  boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> modules);
 
   /**
    * Print the artifact tree found in the workspace for debug purposes.
    *
-   * @param rootArtifacts List<MavenModule>
+   * @param rootModule MavenModule
    * @param printStream   PrintStream
    */
-  void printMavenModuleTree(List<MavenModule> rootArtifacts, PrintStream printStream);
+  void printMavenModuleTree(MavenModule rootModule, PrintStream printStream);
 
 }
