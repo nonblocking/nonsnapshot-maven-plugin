@@ -17,6 +17,11 @@ package at.nonblocking.maven.nonsnapshot;
 
 import java.util.regex.Pattern;
 
+/**
+ * Upstream dependency model
+ *
+ * @author Juergen Kofler
+ */
 public class ProcessedUpstreamDependency {
 
   private Pattern groupPattern;

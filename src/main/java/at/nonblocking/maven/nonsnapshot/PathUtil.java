@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class PathUtil {
+/**
+ * Utility to compare paths
+ *
+ * @author Juergen Kofler
+ */
+public final class PathUtil {
 
   private PathUtil() {}
 

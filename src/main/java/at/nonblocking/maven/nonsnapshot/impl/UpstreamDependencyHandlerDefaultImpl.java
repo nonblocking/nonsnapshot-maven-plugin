@@ -38,6 +38,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Default implementation of UpstreamDependencyHandler
+ *
+ * @author Juergen Kofler
+ */
 @Component(role = UpstreamDependencyHandler.class, hint = "default")
 public class UpstreamDependencyHandlerDefaultImpl implements UpstreamDependencyHandler {
 

@@ -46,7 +46,6 @@ public class ScmHandlerGitImpl implements ScmHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerGitImpl.class);
 
   private File baseDir;
-  private FileRepository localRepo;
   private Git git;
   private CredentialsProvider credentialsProvider;
   private boolean doPush = true;
@@ -159,7 +158,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
     LOG.info("Using GIT repository: {}", this.baseDir.getAbsolutePath());
 
     try {
-      this.localRepo = new FileRepository(this.baseDir + "/.git");
+      FileRepository localRepo = new FileRepository(this.baseDir + "/.git");
       this.git = new Git(localRepo);
       if (scmPassword != null && !scmPassword.trim().isEmpty()) {
         this.credentialsProvider = new UsernamePasswordAndPassphraseCredentialProvider(scmUser, scmPassword);

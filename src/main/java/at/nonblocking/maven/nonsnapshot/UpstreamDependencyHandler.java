@@ -23,10 +23,30 @@ import org.eclipse.aether.repository.RemoteRepository;
 
 import java.util.List;
 
+/**
+ * Handler for upstream dependencies
+ *
+ * @author Juergen Kofler
+ */
 public interface UpstreamDependencyHandler {
 
+  /**
+   * Process the upstream dependency list from the configuration and create objects from it.
+   *
+   * @param upstreamDependencyStrings List<String>
+   * @return List<ProcessedUpstreamDependency>
+   */
   List<ProcessedUpstreamDependency> processDependencyList(List<String> upstreamDependencyStrings);
 
+  /**
+   * Find a matching upstream dependency declaration for given maven artifact.
+   * <br/>
+   * Used to decide if a given dependency is an upstream dependency.
+   *
+   * @param mavenArtifact MavenArtifact
+   * @param upstreamDependencies List<ProcessedUpstreamDependency>
+   * @return ProcessedUpstreamDependency
+   */
   ProcessedUpstreamDependency findMatch(MavenArtifact mavenArtifact, List<ProcessedUpstreamDependency> upstreamDependencies);
 
   /**

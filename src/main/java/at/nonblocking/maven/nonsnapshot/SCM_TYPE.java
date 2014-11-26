@@ -15,6 +15,11 @@
  */
 package at.nonblocking.maven.nonsnapshot;
 
+/**
+ * The source control management system type
+ *
+ * @author Juergen Kofler
+ */
 public enum SCM_TYPE {
   SVN, GIT
 }
