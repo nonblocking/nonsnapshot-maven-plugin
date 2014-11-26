@@ -68,8 +68,13 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 
 ### Notes
 
- * The default SCM type is SVN
- * By the default timestamps are used as qualifiers
+* The default SCM type is SVN
+* By the default timestamps are used as qualifiers
+* An upstream dependency is defined as *groupId:artifactId:baseVersion*. Whereas *groupId* and *artifactId* can contain
+   wildcards. The *baseVersion* is the "prefix" of allowed versions. Examples:
+    * 2.8 -> Look for the latest version that starts with 2.8, e.g. 2.8.1-20140203
+    * 2.8.3 -> Look for the latest version that starts with 2.8.3
+    * LATEST -> Always look for the latest (non snapshot!) version
 
 Usage
 -----
@@ -98,7 +103,7 @@ Then configure the job on your CI server like this:
 2. Execute the goal *nonsnapshot:updateVersions*
 3. Build the whole project
     * Option 1: Jenkins Maven Build
-    * Option 2: Execute script: ./nonsnapshotBuildIncremental.sh install
+    * Option 2: Execute script: *./nonsnapshotBuildIncremental.sh install*
 4. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
 5. Execute the goal *nonsnapshot:commitVersions*
 
