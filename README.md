@@ -77,6 +77,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
     * LATEST -> Always look for the latest (non snapshot!) version
 * The upstream dependency list is processed in order of their definition and the first match is taken. That allows
   it to define an exceptions from a wildcard rule like this:
+  
   ```xml
   	<upstreamDependency>at.nonblocking:test:2.3.4</upstreamDependency>
   	<upstreamDependency>at.nonblocking:*:LATEST</upstreamDependency>
