@@ -115,6 +115,13 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
   private boolean generateIncrementalBuildScripts;
 
   /**
+   * Generate a property file with a property for all changed projects,
+   * which can be used in jenkins for an incremental build (mvn --project ${NONSNAPSHOT_CHANGED_PROJECTS}).
+   */
+  @Parameter(defaultValue = "false")
+  private boolean generateChangedProjectsPropertyFile;
+
+  /**
    * Disable this plugin
    */
   @Parameter(defaultValue = "false")
@@ -300,6 +307,14 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
   public void setGenerateIncrementalBuildScripts(boolean generateIncrementalBuildScripts) {
     this.generateIncrementalBuildScripts = generateIncrementalBuildScripts;
+  }
+
+  public boolean isGenerateChangedProjectsPropertyFile() {
+    return generateChangedProjectsPropertyFile;
+  }
+
+  public void setGenerateChangedProjectsPropertyFile(boolean generateChangedProjectsPropertyFile) {
+    this.generateChangedProjectsPropertyFile = generateChangedProjectsPropertyFile;
   }
 
   public boolean isSkip() {

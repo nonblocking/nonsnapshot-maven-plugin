@@ -279,7 +279,68 @@ public class NonSnapshotUpdateVersionsMojoTest {
 
     assertTrue(scriptFile.exists());
 
-    assertTrue(FileUtils.fileRead(scriptFile).contains("mvn --projects ../test1,../test3,../test4,../test5 "));
+    assertTrue(FileUtils.fileRead(scriptFile).contains(" --projects ../test1,../test3,../test4,../test5 "));
+  }
+
+  @Test
+  public void testChangedProjectsPropertyFile() throws Exception {
+
+    File propertyFile = new File("target/nonsnapshotChangedProjects.properties");
+    propertyFile.delete();
+
+    Model model1 = new Model();
+    Model model2 = new Model();
+    Model model3 = new Model();
+    Model model4 = new Model();
+    Model model5 = new Model();
+
+    File pom1 = new File("test1/pom.xm");
+    File pom2 = new File("test2/pom.xm");
+    File pom3 = new File("test3/pom.xm");
+    File pom4 = new File("test4/pom.xm");
+    File pom5 = new File("test5/pom.xm");
+
+    MavenModule wsArtifact1 = new MavenModule(pom1, "nonblocking.at", "test1", "1.0.0-SNAPSHOT"); // Invalid version
+    MavenModule wsArtifact2 = new MavenModule(pom2, "nonblocking.at", "test2", "1.1.0-1234");
+    MavenModule wsArtifact3 = new MavenModule(pom3, "nonblocking.at", "test3", null); // Invalid version
+    MavenModule wsArtifact4 = new MavenModule(pom4, "nonblocking.at", "test3", "2.1.0-FIX1-1234");
+    MavenModule wsArtifact5 = new MavenModule(pom5, "nonblocking.at", "test3", "${test.version}"); // Invalid version
+
+    List<MavenModule> artifactList = new ArrayList<>();
+    artifactList.add(wsArtifact1);
+    artifactList.add(wsArtifact2);
+    artifactList.add(wsArtifact3);
+    artifactList.add(wsArtifact4);
+    artifactList.add(wsArtifact5);
+
+    MavenProject mavenProject = new MavenProject();
+    mavenProject.setFile(new File("target"));
+
+    when(this.mockModuleTraverser.findAllModules(mavenProject)).thenReturn(Arrays.asList(model1, model2, model3, model4, model5));
+    when(this.mockMavenPomHandler.readArtifact(model1)).thenReturn(wsArtifact1);
+    when(this.mockMavenPomHandler.readArtifact(model2)).thenReturn(wsArtifact2);
+    when(this.mockMavenPomHandler.readArtifact(model3)).thenReturn(wsArtifact3);
+    when(this.mockMavenPomHandler.readArtifact(model4)).thenReturn(wsArtifact4);
+    when(this.mockMavenPomHandler.readArtifact(model5)).thenReturn(wsArtifact5);
+
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+
+    when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);;
+
+    when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1234");
+    when(this.mockScmHandler.getNextRevisionId(pom4.getParentFile())).thenReturn("1234");
+    when(this.mockScmHandler.getNextRevisionId(pom5.getParentFile())).thenReturn("1234");
+
+    this.nonSnapshotMojo.setScmType(SCM_TYPE.SVN);
+    this.nonSnapshotMojo.setUseSvnRevisionQualifier(true);
+    this.nonSnapshotMojo.setGenerateChangedProjectsPropertyFile(true);
+
+    this.nonSnapshotMojo.execute();
+
+    assertTrue(propertyFile.exists());
+
+    assertTrue(FileUtils.fileRead(propertyFile).contains("nonsnapshot.changed.projects=../test1,../test3,../test4,../test5"));
   }
 
   @Test

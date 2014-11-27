@@ -53,6 +53,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 		<useSvnRevisionQualifier>true</useSvnRevisionQualifier>
 		<deferPomCommit>true</deferPomCommit>
 		<generateIncrementalBuildScripts>true</generateIncrementalBuildScripts>
+		<generateChangedProjectsPropertyFile>true</generateChangedProjectsPropertyFile>
 		<dontFailOnCommit>false</dontFailOnCommit>
 		<dontFailOnUpstreamVersionResolution>false</dontFailOnUpstreamVersionResolution>
 		<upstreamDependencies>
@@ -71,6 +72,11 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 
 * Supported SCM systems are SVN and GIT, default is SVN.
 * By the default timestamps are used as qualifiers
+* *generateIncrementalBuildScripts* creates shell script for an incremental build using the new *--projects* option
+  to filter aggregate projects (Maven > 3.2.1 only)
+* *generateChangedProjectsPropertyFile* creates a Java property file with a single entry which contains all changed projects.
+  This can be used in conjunction with the EnvInject plugin on Jenkins to do incremental build. Like this:
+  *mvn --project ${nonsnapshot.changed.projects} install*.
 * An upstream dependency is defined as *groupId:artifactId:baseVersion*. Whereas *groupId* and *artifactId* can contain
    wildcards. The *baseVersion* is the "prefix" of allowed versions. Examples:
     * 2.8 -> Look for the latest version that starts with 2.8, e.g. 2.8.1-20140203
