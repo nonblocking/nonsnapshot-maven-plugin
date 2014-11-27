@@ -75,7 +75,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 * *generateIncrementalBuildScripts* creates shell script for an incremental build using the new *--projects* option
   to filter aggregate projects (Maven > 3.2.1 only)
 * *generateChangedProjectsPropertyFile* creates a Java property file with a single entry which contains all changed projects.
-  This can be used in conjunction with the EnvInject plugin on Jenkins to do incremental build. Like this:
+  This can be used in conjunction with the EnvInject plugin on Jenkins to do an incremental build. Like this:
   *mvn --project ${nonsnapshot.changed.projects} install*.
 * An upstream dependency is defined as *groupId:artifactId:baseVersion*. Whereas *groupId* and *artifactId* can contain
    wildcards. The *baseVersion* is the "prefix" of allowed versions. Examples:
