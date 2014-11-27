@@ -18,7 +18,7 @@ package at.nonblocking.maven.nonsnapshot.impl;
 import java.io.PrintStream;
 import java.util.List;
 
-import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
+import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
@@ -79,10 +79,20 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
         continue;
       }
 
-      if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
-        MavenModule parentModule = (MavenModule) mavenModule.getParent();
-        if (parentModule.isDirty()) {
-          LOG.debug("Marking module {}:{} dirty because parent is dirty.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+      if (mavenModule.getParent() != null) {
+        if (mavenModule.getParent() instanceof MavenModule) {
+          MavenModule parentModule = (MavenModule) mavenModule.getParent();
+          if (parentModule.isDirty()) {
+            LOG.info("Marking module {}:{} dirty because parent is dirty.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+            mavenModule.setDirty(true);
+            changes = true;
+            continue;
+          }
+        } else if (mavenModule.getParent() instanceof UpdatedUpstreamMavenArtifact) {
+          UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifact = (UpdatedUpstreamMavenArtifact) mavenModule.getParent();
+          LOG.info("Marking module {}:{} dirty because upstream parent is dirty: {}:{}.",
+              new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(),
+                  updatedUpstreamMavenArtifact.getGroupId(), updatedUpstreamMavenArtifact.getArtifactId()});
           mavenModule.setDirty(true);
           changes = true;
           continue;
@@ -93,21 +103,20 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
         if (dependency.getArtifact() instanceof MavenModule) {
           MavenModule parentModule = (MavenModule) dependency.getArtifact();
           if (parentModule.isDirty()) {
-            LOG.debug("Marking module {}:{} dirty because dependency is dirty: {}:{}",
+            LOG.info("Marking module {}:{} dirty because dependency is dirty: {}:{}",
                 new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), parentModule.getGroupId(), parentModule.getArtifactId()});
             mavenModule.setDirty(true);
             changes = true;
             break;
           }
-        } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
-          UpstreamMavenArtifact upstreamDependency = (UpstreamMavenArtifact) dependency.getArtifact();
-          if (upstreamDependency.isDirty()) {
-            LOG.debug("Marking module {}:{} dirty because upstream dependency is dirty: {}:{}",
-                new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), upstreamDependency.getGroupId(), upstreamDependency.getArtifactId()});
-            mavenModule.setDirty(true);
-            changes = true;
-            break;
-          }
+        } else if (dependency.getArtifact() instanceof UpdatedUpstreamMavenArtifact) {
+          UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifact = (UpdatedUpstreamMavenArtifact) dependency.getArtifact();
+          LOG.info("Marking module {}:{} dirty because upstream dependency is dirty: {}:{}",
+              new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(),
+                  updatedUpstreamMavenArtifact.getGroupId(), updatedUpstreamMavenArtifact.getArtifactId()});
+          mavenModule.setDirty(true);
+          changes = true;
+          break;
         }
       }
     }

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
+import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputLocationTracker;
@@ -183,15 +183,19 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
 
     addUpdateCommand(mavenModule, mavenModule.getVersionLocation(), false, commands);
 
-    if (mavenModule.getParent() != null && mavenModule.getParent() instanceof MavenModule) {
-      addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, commands);
+    if (mavenModule.getParent() != null) {
+      if (mavenModule.getParent() instanceof MavenModule) {
+        addUpdateCommand((MavenModule) mavenModule.getParent(), mavenModule.getParentVersionLocation(), true, commands);
+      } else if (mavenModule.getParent() instanceof UpdatedUpstreamMavenArtifact) {
+        addUpdateCommand((UpdatedUpstreamMavenArtifact) mavenModule.getParent(), mavenModule.getParentVersionLocation(), commands);
+      }
     }
 
     for (MavenModuleDependency dependency : mavenModule.getDependencies()) {
       if (dependency.getArtifact() instanceof MavenModule) {
         addUpdateCommand((MavenModule) dependency.getArtifact(), dependency.getVersionLocation(), true, commands);
-      } else if (dependency.getArtifact() instanceof UpstreamMavenArtifact) {
-        addUpdateCommand((UpstreamMavenArtifact) dependency.getArtifact(), dependency.getVersionLocation(), commands);
+      } else if (dependency.getArtifact() instanceof UpdatedUpstreamMavenArtifact) {
+        addUpdateCommand((UpdatedUpstreamMavenArtifact) dependency.getArtifact(), dependency.getVersionLocation(), commands);
       }
     }
 
@@ -214,8 +218,8 @@ public class MavenPomHandlerDefaultImpl implements MavenPomHandler {
     }
   }
 
-  private void addUpdateCommand(UpstreamMavenArtifact upstreamMavenArtifact, Integer lineNumber, List<PomUpdateCommand> commands) {
-    commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + upstreamMavenArtifact.getNewVersion() + "</version>"));
+  private void addUpdateCommand(UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifact, Integer lineNumber, List<PomUpdateCommand> commands) {
+    commands.add(new PomUpdateCommand(lineNumber, UPDATE_COMMAND_TYPE.REPLACE, "<version>.*?</version>", "<version>" + updatedUpstreamMavenArtifact.getNewVersion() + "</version>"));
   }
 
   private void executeUpdateCommands(List<PomUpdateCommand> commands, File pomFile) {

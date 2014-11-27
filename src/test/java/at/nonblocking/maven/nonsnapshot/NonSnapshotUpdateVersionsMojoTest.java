@@ -339,9 +339,79 @@ public class NonSnapshotUpdateVersionsMojoTest {
 
     this.nonSnapshotMojo.execute();
 
+    verify(this.mockUpstreamDependencyHandler, times(1)).processDependencyList(upstreamDependencyString);
+    verify(this.mockUpstreamDependencyHandler, times(1)).findMatch(upstreamDep1, upstreamDependencies);
+    verify(this.mockUpstreamDependencyHandler, times(1)).resolveLatestVersion(upstreamDep1, upstreamDependency, null, null, null);
+
     assertNull(wsArtifact1.getNewVersion());
     assertEquals("1.0.13-6677", wsArtifact2.getNewVersion());
   }
+
+  @Test
+  public void testUpdateUpstreamDependencyVersionsParent() throws Exception {
+
+    Model model1 = new Model();
+    Model model2 = new Model();
+
+    File pom1 = new File("test1/pom.xm");
+    File pom2 = new File("test2/pom.xm");
+
+    MavenModule wsArtifact1 = new MavenModule(pom1, "nonblocking.at", "test1", "1.1.0-1234");
+    final MavenModule wsArtifact2 = new MavenModule(pom2, "nonblocking.at", "test2", "2.2.0-1234");
+
+    MavenArtifact upstreamDep1 = new MavenArtifact("nonblocking.at", "test3", "3.3.3-1235");
+
+    wsArtifact2.getDependencies().add(new MavenModuleDependency(-1, wsArtifact1));
+    wsArtifact2.setParent(upstreamDep1);
+
+    final List<MavenModule> artifactList = new ArrayList<>();
+    artifactList.add(wsArtifact1);
+    artifactList.add(wsArtifact2);
+
+    MavenProject mavenProject = new MavenProject();
+    mavenProject.setFile(new File("target"));
+
+    List<String> upstreamDependencyString = Arrays.asList("at.nonblocking:test1:LATEST");
+
+    ProcessedUpstreamDependency upstreamDependency = new ProcessedUpstreamDependency(null, null, -1, -1, -1);
+    List<ProcessedUpstreamDependency> upstreamDependencies = Arrays.asList(upstreamDependency);
+
+    when(this.mockModuleTraverser.findAllModules(mavenProject)).thenReturn(Arrays.asList(model1, model2));
+
+    when(this.mockMavenPomHandler.readArtifact(model1)).thenReturn(wsArtifact1);
+    when(this.mockMavenPomHandler.readArtifact(model2)).thenReturn(wsArtifact2);
+
+    when(this.mockDependencyTreeProcessor.markAllArtifactsDirtyWithDirtyDependencies(artifactList)).then(new Answer<Boolean>() {
+      @Override
+      public Boolean answer(InvocationOnMock invocation) throws Throwable {
+        wsArtifact2.setDirty(true);
+        return false;
+      }
+    });
+
+    when(this.mockScmHandler.checkChangesSinceRevision(pom1.getParentFile(), "1234")).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
+    when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
+    when(this.mockScmHandler.getNextRevisionId(pom2.getParentFile().getCanonicalFile())).thenReturn("6677");
+
+    when(this.mockUpstreamDependencyHandler.processDependencyList(upstreamDependencyString)).thenReturn(upstreamDependencies);
+    when(this.mockUpstreamDependencyHandler.findMatch(upstreamDep1, upstreamDependencies)).thenReturn(upstreamDependency);
+    when(this.mockUpstreamDependencyHandler.resolveLatestVersion(upstreamDep1, upstreamDependency, null, null, null)).thenReturn("5.0.1-1234");
+
+    this.nonSnapshotMojo.setScmType(SCM_TYPE.SVN);
+    this.nonSnapshotMojo.setUseSvnRevisionQualifier(true);
+    this.nonSnapshotMojo.setUpstreamDependencies(upstreamDependencyString);
+
+    this.nonSnapshotMojo.execute();
+
+    verify(this.mockUpstreamDependencyHandler, times(1)).processDependencyList(upstreamDependencyString);
+    verify(this.mockUpstreamDependencyHandler, times(1)).findMatch(upstreamDep1, upstreamDependencies);
+    verify(this.mockUpstreamDependencyHandler, times(1)).resolveLatestVersion(upstreamDep1, upstreamDependency, null, null, null);
+
+    assertNull(wsArtifact1.getNewVersion());
+    assertEquals("1.0.13-6677", wsArtifact2.getNewVersion());
+  }
+
 
   @Test
   public void testNoUpdate() throws Exception {

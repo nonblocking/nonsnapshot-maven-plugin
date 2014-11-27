@@ -30,7 +30,7 @@ import java.util.List;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
-import at.nonblocking.maven.nonsnapshot.model.UpstreamMavenArtifact;
+import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     markDirtyWhenRevisionChangedOrInvalidQualifier(mavenModules);
 
     if (getUpstreamDependencies() != null) {
-      updateUpstreamPlugins(mavenModules);
+      updateUpstreamArtifacts(mavenModules);
     }
 
     //Recursively mark artifacts dirty
@@ -181,36 +181,48 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     }
   }
 
-  private void updateUpstreamPlugins(List<MavenModule> mavenModules) {
+  private void updateUpstreamArtifacts(List<MavenModule> mavenModules) {
     for (MavenModule mavenModule : mavenModules) {
+      //Parent
+      UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifactParent = updateUpstreamArtifact(mavenModule.getParent());
+      if (updatedUpstreamMavenArtifactParent != null) {
+        mavenModule.setParent(updatedUpstreamMavenArtifactParent);
+      }
+
+      //Dependencies
       for (MavenModuleDependency moduleDependency : mavenModule.getDependencies()) {
-        MavenArtifact dependency = moduleDependency.getArtifact();
-        if (!(dependency instanceof MavenModule)) {
-          ProcessedUpstreamDependency upstreamDependency = getUpstreamDependencyHandler().findMatch(dependency, getProcessedUpstreamDependencies());
-          if (upstreamDependency != null) {
-            LOG.debug("Upstream dependency found: {}:{}", dependency.getGroupId(), dependency.getArtifactId());
+        UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifactDep = updateUpstreamArtifact(moduleDependency.getArtifact());
+        if (updatedUpstreamMavenArtifactDep != null) {
+          moduleDependency.setArtifact(updatedUpstreamMavenArtifactDep);
+        }
+      }
+    }
+  }
 
-            try {
-              String latestVersion = getUpstreamDependencyHandler().resolveLatestVersion(dependency, upstreamDependency, getRepositorySystem(), getRepositorySystemSession(), getRemoteRepositories());
-              if (latestVersion != null) {
-                LOG.info("Found newer version for upstream dependency {}:{}: {}", new Object[]{dependency.getGroupId(), dependency.getArtifactId(), latestVersion});
+  private UpdatedUpstreamMavenArtifact updateUpstreamArtifact(MavenArtifact upstreamArtifact) {
+    if (!(upstreamArtifact instanceof MavenModule)) {
+      ProcessedUpstreamDependency upstreamDependency = getUpstreamDependencyHandler().findMatch(upstreamArtifact, getProcessedUpstreamDependencies());
+      if (upstreamDependency != null) {
+        LOG.debug("Upstream dependency found: {}:{}", upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId());
 
-                UpstreamMavenArtifact upstreamMavenArtifact =
-                    new UpstreamMavenArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), latestVersion);
-                moduleDependency.setArtifact(upstreamMavenArtifact);
-              }
-            } catch (NonSnapshotDependencyResolverException e) {
-              if (isDontFailOnUpstreamVersionResolution()) {
-                LOG.warn("Upstream dependency resolution failed (cannot update {}:{}). Error: {}",
-                    new Object[]{dependency.getGroupId(), dependency.getArtifactId(), e.getMessage()});
-              } else {
-                throw e;
-              }
-            }
+        try {
+          String latestVersion = getUpstreamDependencyHandler().resolveLatestVersion(upstreamArtifact, upstreamDependency, getRepositorySystem(), getRepositorySystemSession(), getRemoteRepositories());
+          if (latestVersion != null) {
+            LOG.info("Found newer version for upstream dependency {}:{}: {}", new Object[]{upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), latestVersion});
+            return new UpdatedUpstreamMavenArtifact(upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), upstreamArtifact.getVersion(), latestVersion);
+          }
+        } catch (NonSnapshotDependencyResolverException e) {
+          if (isDontFailOnUpstreamVersionResolution()) {
+            LOG.warn("Upstream dependency resolution failed (cannot update {}:{}). Error: {}",
+                new Object[]{upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), e.getMessage()});
+          } else {
+            throw e;
           }
         }
       }
     }
+
+    return null;
   }
 
   private void setNextRevisionOnDirtyArtifacts(List<MavenModule> mavenModules) {
