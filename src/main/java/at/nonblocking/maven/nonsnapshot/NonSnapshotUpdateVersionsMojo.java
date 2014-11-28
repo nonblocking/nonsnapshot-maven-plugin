@@ -106,13 +106,14 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
       }
     }
 
+    if (isGenerateChangedProjectsPropertyFile()) {
+      generateChangedProjectsPropertyFile(pomsToCommit);
+    }
+
     if (pomsToCommit.size() > 0) {
       writeDirtyModulesRegistry(pomsToCommit);
       if (isGenerateIncrementalBuildScripts()) {
         generateIncrementalBuildScripts(pomsToCommit);
-      }
-      if (isGenerateChangedProjectsPropertyFile()) {
-        generateChangedProjectsPropertyFile(pomsToCommit);
       }
 
       if (!isDeferPomCommit()) {
@@ -187,9 +188,11 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
   private void updateUpstreamArtifacts(List<MavenModule> mavenModules) {
     for (MavenModule mavenModule : mavenModules) {
       //Parent
-      UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifactParent = updateUpstreamArtifact(mavenModule.getParent());
-      if (updatedUpstreamMavenArtifactParent != null) {
-        mavenModule.setParent(updatedUpstreamMavenArtifactParent);
+      if (mavenModule.getParent() != null) {
+        UpdatedUpstreamMavenArtifact updatedUpstreamMavenArtifactParent = updateUpstreamArtifact(mavenModule.getParent());
+        if (updatedUpstreamMavenArtifactParent != null) {
+          mavenModule.setParent(updatedUpstreamMavenArtifactParent);
+        }
       }
 
       //Dependencies
@@ -283,7 +286,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         writer.write("SET MVN_EXEC=mvn.bat\n");
         writer.write("IF DEFINED M2_HOME (set MVN_EXEC=%M2_HOME%\\bin\\mvn.bat)\n");
         writer.write("ECHO Using maven executable: %MVN_EXEC%\n");
-        writer.write("%MVN_EXEC% --projects " + projectPaths.toString() + " %*");
+        writer.write("%MVN_EXEC% --projects " + projectPaths + " %*");
         writer.close();
 
       } catch (IOException e) {
@@ -304,7 +307,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
         writer.write("  MVN_EXEC=$M2_HOME/bin/mvn\n");
         writer.write("fi\n");
         writer.write("echo \"Using maven executable: $MVN_EXEC\"\n");
-        writer.write("$MVN_EXEC --projects " + projectPaths.toString() + " $@");
+        writer.write("$MVN_EXEC --projects " + projectPaths + " $@");
         writer.close();
 
         Runtime.getRuntime().exec("chmod u+x " + shellFile.getAbsolutePath());
@@ -317,6 +320,9 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
   private void generateChangedProjectsPropertyFile(List<File> pomFileList) {
     String projectPaths = createProjectPathsString(pomFileList);
+    if (projectPaths.isEmpty()) {
+      projectPaths = "."; //An empty property wont work on Jenkins
+    }
 
     File propertyFile = new File(getMavenProject().getBasedir(), "nonsnapshotChangedProjects.properties");
     LOG.info("Writing changed projects to property file: {}", propertyFile.getAbsolutePath());
