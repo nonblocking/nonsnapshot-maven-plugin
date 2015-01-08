@@ -131,7 +131,7 @@ Then configure the job on your CI server like this:
     * Option 2: Incremental build with *mvn install --projects ${nonsnapshot.changed.projects}*.
       To get the property *nonsnapshot.changed.projects* you have to enable the option *generateChangedProjectsPropertyFile*
       and inject properties from the generated file *./nonsnapshotChangedProjects.properties*.
-      On Jenkins you can use the [EnvInject Plugin](https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin).
+      On Jenkins you can use the [EnvInject Plugin](https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin) for that.
 4. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
 5. Execute the goal *nonsnapshot:commitVersions*
 
