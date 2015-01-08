@@ -10,7 +10,7 @@ dealing with SNAPSHOT versions really becomes unhandy. The main reasons are:
 1. The developers need to have all projects in the workspace to make sure the dependency resolution of the IDE works
 2. Manually versioning 100+ projects means a lot of effort
 3. It is not possible to reproduce the exact state of a project to any given time, when you depend on SNAPSHOT versions
-4. It makes a fully automatized deployment complicated, since you need a manual versioning step instead just pushing the latest build onto your servers
+4. It makes a fully automatized deployment complicated, since you need a manual versioning step instead of just pushing the latest build onto your servers
 
 How this plugin works
 ---------------------
@@ -26,7 +26,7 @@ The algorithm works as follows:
 4. Mark all modules as dirty which have dirty dependencies.
 5. Bump the version of all dirty modules.
 6. Rewrite the pom.xml of all modules with a new version.
-7. Optional: Generate a script for an incremental build of all dirty modules (Maven > 3.2.1 required).
+7. Optional: Generate a script and/or property file for an incremental build of all dirty modules (Maven > 3.2.1 required).
 8. Commit all changed pom.xml files to SCM. This step can be deferred and done by a second goal.
 
 The generated artifact versions consist of a "base version", which can be configured,
@@ -41,30 +41,41 @@ Configuration
 The plugin can be added to a separate (POM-) project or your main aggregator project. Like this:
 
 ```xml
-<plugin>
-	<groupId>at.nonblocking</groupId>
-	<artifactId>nonsnapshot-maven-plugin</artifactId>
-	<version>2.0</version>
-	<configuration>
-		<baseVersion>1.2.3</baseVersion>
-		<scmType>SVN</scmType>
-		<scmUser>${scmUser}</scmUser>
-		<scmPassword>${scmPassword}</scmPassword>
-		<useSvnRevisionQualifier>true</useSvnRevisionQualifier>
-		<deferPomCommit>true</deferPomCommit>
-		<generateIncrementalBuildScripts>true</generateIncrementalBuildScripts>
-		<generateChangedProjectsPropertyFile>true</generateChangedProjectsPropertyFile>
-		<dontFailOnCommit>false</dontFailOnCommit>
-		<dontFailOnUpstreamVersionResolution>false</dontFailOnUpstreamVersionResolution>
-		<upstreamDependencies>
-			<upstreamDependency>at.nonblocking:*:LATEST</upstreamDependency>
-			<!-- Examples -->
-			<!-- <upstreamDependency>at.nonblocking:*:2.10</upstreamDependency> -->
-			<!-- <upstreamDependency>at.nonblocking:test-test2:2.10.3</upstreamDependency>-->
-			<!-- <upstreamDependency>at.nonblocking:test-*:LATEST</upstreamDependency>-->
-		</upstreamDependencies>
-	</configuration>
-</plugin>
+<build>
+	<plugins>
+		<plugin>
+			<groupId>at.nonblocking</groupId>
+			<artifactId>nonsnapshot-maven-plugin</artifactId>
+			<version>2.0</version>
+			<configuration>
+				<baseVersion>1.2.3</baseVersion>
+				<scmType>SVN</scmType>
+				<scmUser>${scmUser}</scmUser>
+				<scmPassword>${scmPassword}</scmPassword>
+				<useSvnRevisionQualifier>true</useSvnRevisionQualifier>
+				<deferPomCommit>true</deferPomCommit>
+				<generateIncrementalBuildScripts>true</generateIncrementalBuildScripts>
+				<generateChangedProjectsPropertyFile>true</generateChangedProjectsPropertyFile>
+				<dontFailOnCommit>false</dontFailOnCommit>
+				<dontFailOnUpstreamVersionResolution>false</dontFailOnUpstreamVersionResolution>
+				<upstreamDependencies>
+					<upstreamDependency>at.nonblocking:*:LATEST</upstreamDependency>
+					<!-- Examples -->
+					<!-- <upstreamDependency>at.nonblocking:*:2.10</upstreamDependency> -->
+					<!-- <upstreamDependency>at.nonblocking:test-test2:2.10.3</upstreamDependency>-->
+					<!-- <upstreamDependency>at.nonblocking:test-*:LATEST</upstreamDependency>-->
+				</upstreamDependencies>
+			</configuration>
+		</plugin>
+	</plugins>
+</build>
+
+<pluginRepositories>
+	<pluginRepository>
+		<id>jcenter</id>
+		<url>http://jcenter.bintray.com</url>
+	</pluginRepository>
+</pluginRepositories>
 
 ```
 
@@ -75,7 +86,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 * *generateIncrementalBuildScripts* creates shell script for an incremental build using the new *--projects* option
   to filter aggregate projects (Maven > 3.2.1 only)
 * *generateChangedProjectsPropertyFile* creates a Java property file with a single entry which contains all changed projects.
-  This can be used in conjunction with the EnvInject plugin on Jenkins to do an incremental build. Like this:
+  This can be used in conjunction with the [EnvInject Plugin](https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin) on Jenkins to do an incremental build. Like this:
   *mvn --project ${nonsnapshot.changed.projects} install*.
 * An upstream dependency is defined as *groupId:artifactId:baseVersion*. Whereas *groupId* and *artifactId* can contain
    wildcards. The *baseVersion* is the "prefix" of allowed versions. Examples:
@@ -116,8 +127,12 @@ Then configure the job on your CI server like this:
 1. Revert and update the workspace
 2. Execute the goal *nonsnapshot:updateVersions*
 3. Build the whole project
-    * Option 1: Jenkins Maven Build
-    * Option 2: Execute script: *./nonsnapshotBuildIncremental.sh install*
+    * Option 1: *mvn install*
+    * Option 2: Incremental build with *mvn install --projects ${nonsnapshot.changed.projects}*.
+      To get the property *nonsnapshot.changed.projects* you have to enable the option *generateChangedProjectsPropertyFile*
+      and inject the generated file *./nonsnapshotChangedProjects* with the
+      You have to inject the properties from ./nonsnapshost.
+      On Jenkins you can use the [EnvInject Plugin](https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin).
 4. Deploy all generated artifacts to your remote Maven repository (e.g. *Artifactory*)
 5. Execute the goal *nonsnapshot:commitVersions*
 
