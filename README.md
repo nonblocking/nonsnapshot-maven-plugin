@@ -46,7 +46,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 		<plugin>
 			<groupId>at.nonblocking</groupId>
 			<artifactId>nonsnapshot-maven-plugin</artifactId>
-			<version>2.0.8</version>
+			<version>2.0.9</version>
 			<configuration>
 				<baseVersion>1.2.3</baseVersion>
 				<scmType>SVN</scmType>
