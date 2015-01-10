@@ -63,14 +63,9 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
   protected void internalExecute() {
     setTimestamp();
 
-    List<Model> mavenModels = getModuleTraverser().findAllModules(getMavenProject());
+    List<Model> mavenModels = getModuleTraverser().findAllModules(getMavenProject(), getMavenProject().getActiveProfiles());
 
-    List<MavenModule> mavenModules = new ArrayList<>();
-
-    for (Model model : mavenModels) {
-      MavenModule module = getMavenPomHandler().readArtifact(model);
-      mavenModules.add(module);
-    }
+    List<MavenModule> mavenModules = buildModules(mavenModels);
 
     MavenModule rootModule = mavenModules.get(0);
 
@@ -93,6 +88,17 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     dumpArtifactTreeToLog(rootModule);
 
     writeAndCommitArtifacts(mavenModules);
+  }
+
+  private List<MavenModule> buildModules(List<Model> mavenModels) {
+    List<MavenModule> mavenModules = new ArrayList<>();
+
+    for (Model model : mavenModels) {
+      MavenModule module = getMavenPomHandler().readArtifact(model);
+      mavenModules.add(module);
+    }
+
+    return mavenModules;
   }
 
   protected void writeAndCommitArtifacts(List<MavenModule> mavenModules) {

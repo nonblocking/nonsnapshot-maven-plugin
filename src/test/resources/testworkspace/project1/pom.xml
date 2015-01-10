@@ -13,4 +13,16 @@
 		<module>../project2</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>foo</id>
+
+			<modules>
+				<module>module1</module>
+				<module>module3</module>
+			</modules>
+
+		</profile>
+	</profiles>
+
 </project>

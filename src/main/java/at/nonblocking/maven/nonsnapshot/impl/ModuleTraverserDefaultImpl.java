@@ -19,6 +19,7 @@ import at.nonblocking.maven.nonsnapshot.ModuleTraverser;
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 import org.apache.maven.model.InputSource;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
 import org.apache.maven.model.io.xpp3.MavenXpp3ReaderEx;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
@@ -30,8 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Default implementation of a module traverser.
@@ -44,15 +44,15 @@ public class ModuleTraverserDefaultImpl implements ModuleTraverser {
   private static final Logger LOG = LoggerFactory.getLogger(ModuleTraverserDefaultImpl.class);
 
   @Override
-  public List<Model> findAllModules(MavenProject baseProject) {
+  public List<Model> findAllModules(MavenProject baseProject, List<Profile> activeProfiles) {
+    LOG.info("Scanning for Maven modules... Active profiles: {}", activeProfiles);
+
     List<Model> modelList = new ArrayList<>();
-
-    recursiveFindModules(baseProject.getBasedir(), modelList);
-
+    recursiveFindModules(baseProject.getBasedir(), modelList, activeProfiles);
     return modelList;
   }
 
-  private void recursiveFindModules(File baseDir, List<Model> modelList) {
+  private void recursiveFindModules(File baseDir, List<Model> modelList, List<Profile> activeProfiles) {
     MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
     File pom = new File(baseDir, "pom.xml");
 
@@ -70,10 +70,29 @@ public class ModuleTraverserDefaultImpl implements ModuleTraverser {
 
     modelList.add(model);
 
-    for (String modulePath : model.getModules()) {
-      File moduleDir = new File(baseDir, modulePath);
-      recursiveFindModules(moduleDir, modelList);
+    Set<String> modulePaths = new LinkedHashSet<>();
+    modulePaths.addAll(model.getModules());
+
+    if (activeProfiles != null) {
+      for (Profile activeProfile : activeProfiles) {
+        modulePaths.addAll(getProfileModules(model, activeProfile));
+      }
     }
+
+    for (String modulePath : modulePaths) {
+      File moduleDir = new File(baseDir, modulePath);
+      recursiveFindModules(moduleDir, modelList, activeProfiles);
+    }
+  }
+
+  private List<String> getProfileModules(Model model, Profile activeProfile) {
+    for (Profile profile : model.getProfiles()) {
+      if (profile.getId().equals(activeProfile.getId())) {
+        return profile.getModules();
+      }
+    }
+
+    return Collections.emptyList();
   }
 
 }
