@@ -51,9 +51,6 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   private String cachedNextRevision;
 
   public ScmHandlerSvnImpl() {
-    // Avoid a bad_record_mac error when using SSL with Java 6
-    // See http://issues.tmatesoft.com/issue/SVNKIT-176?projectKey=SVNKIT&query=bad_record_mac
-    System.setProperty("svnkit.http.sslProtocols", "SSLv3");
   }
 
   @Override
