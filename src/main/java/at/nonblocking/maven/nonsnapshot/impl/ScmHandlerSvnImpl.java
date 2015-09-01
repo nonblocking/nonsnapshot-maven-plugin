@@ -75,7 +75,7 @@ public class ScmHandlerSvnImpl implements ScmHandler {
           new ISVNLogEntryHandler() {
             @Override
             public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
-              if (svnLogEntry.getRevision() > revisionNr && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+              if (svnLogEntry.getRevision() >= revisionNr && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
                 LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
                     new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
                 changes[0] = true;
