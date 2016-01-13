@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 @Ignore
@@ -23,6 +24,17 @@ public class ScmHandlerGitImplTest {
   @BeforeClass
   public static void setupLog() {
     StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
+  }
+
+  @Test
+  public void testGetLastCommitDate() throws Exception {
+    File path = new File(GIT_TEST_FOLDER);
+
+    ScmHandler scmService = new ScmHandlerGitImpl();
+    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
+    Date lastCommitDate = scmService.getLastCommitDate(path);
+
+    assertNotNull(lastCommitDate);
   }
 
   @Test
@@ -39,12 +51,10 @@ public class ScmHandlerGitImplTest {
 
   @Test
   public void testNoWorkingCopy() throws Exception {
-    File path = new File("target");
-
     ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
+    scmService.init(new File("target"), null, null, null);
 
-    assertFalse(scmService.isWorkingCopy(path));
+    assertFalse(scmService.isWorkingCopy(new File("test")));
   }
 
   @Test

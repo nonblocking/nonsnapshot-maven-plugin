@@ -32,7 +32,7 @@ public class ScmHandlerSvnImplTest {
     ScmHandler scmService = new ScmHandlerSvnImpl();
     scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
-    boolean changes = scmService.checkChangesSinceRevision(path, "26505");
+    boolean changes = scmService.checkChangesSinceRevision(path, 26505);
 
     assertTrue(changes);
   }
@@ -60,15 +60,27 @@ public class ScmHandlerSvnImplTest {
   }
 
   @Test
-  public void testNextRevision() throws Exception {
+  public void testGetCurrentRevisionId() throws Exception {
     File path = new File(SVN_TEST_FOLDER);
 
     ScmHandler scmService = new ScmHandlerSvnImpl();
     scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
-    long nextRevision = Long.valueOf(scmService.getNextRevisionId(path));
+    long currentRevision = scmService.getCurrentRevisionId(path);
 
-    assertTrue(nextRevision > 0);
+    assertTrue(currentRevision > 0);
+  }
+
+  @Test
+  public void testGetLastCommitDate() throws Exception {
+    File path = new File(SVN_TEST_FOLDER);
+
+    ScmHandler scmService = new ScmHandlerSvnImpl();
+    scmService.init(null, SVN_USER, SVN_PASSWORD, null);
+
+    Date lastCommitDate = scmService.getLastCommitDate(path);
+
+    assertNotNull(lastCommitDate);
   }
 
   @Test

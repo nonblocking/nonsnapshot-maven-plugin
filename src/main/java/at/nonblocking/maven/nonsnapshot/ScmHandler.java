@@ -38,13 +38,31 @@ public interface ScmHandler {
   boolean isWorkingCopy(File moduleDirectory);
 
   /**
+   * Get the current revision id of this path.
+   * <br/>
+   * Only supported by SVN. Other implementations may throw NotImplementedExceptions.
+   *
+   * @param path File
+   * @return String
+   */
+  long getCurrentRevisionId(File path);
+
+  /**
    * Check if there has been changes since given revisionId
    *
    * @param moduleDirectory File
-   * @param revisionId String
+   * @param revisionId long
    * @return boolean
    */
-  boolean checkChangesSinceRevision(File moduleDirectory, String revisionId);
+  boolean checkChangesSinceRevision(File moduleDirectory, long revisionId);
+
+  /**
+   * Get date of last commit within given path.
+   *
+   * @param path String
+   * @return Date
+     */
+  Date getLastCommitDate(File path);
 
   /**
    * Check if there has been changes since given date
@@ -55,15 +73,6 @@ public interface ScmHandler {
    */
   boolean checkChangesSinceDate(File moduleDirectory, Date date);
 
-  /**
-   * Get the next revision number this path would get in case of a commit.
-   * <br/>
-   * Only supported by SVN (for all I know). Other implementations may throw NotImplementedExceptions.
-   *
-   * @param path File
-   * @return String
-   */
-  String getNextRevisionId(File path);
 
   /**
    * Commit the given path to the remote repository.

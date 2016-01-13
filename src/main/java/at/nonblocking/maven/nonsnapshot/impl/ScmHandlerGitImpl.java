@@ -65,7 +65,28 @@ public class ScmHandlerGitImpl implements ScmHandler {
   }
 
   @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, String revisionId) {
+  public Date getLastCommitDate(File path) {
+
+    try {
+      LogCommand logCommand = this.git
+              .log()
+              .setMaxCount(100);
+
+      String modulePath = PathUtil.relativePath(this.baseDir, path);
+      if (!modulePath.isEmpty()) {
+        logCommand.addPath(modulePath);
+      }
+
+      RevCommit lastCommit = logCommand.call().iterator().next();
+      return new Date(lastCommit.getCommitTime() * 1000);
+
+    } catch (Exception e) {
+      throw new NonSnapshotPluginException("Failed to determine last commit date!", e);
+    }
+  }
+
+  @Override
+  public boolean checkChangesSinceRevision(final File moduleDirectory, long revisionId) {
     throw new RuntimeException("Operation checkChangesSinceRevision() not supported by the GIT handler");
   }
 
@@ -108,8 +129,8 @@ public class ScmHandlerGitImpl implements ScmHandler {
   }
 
   @Override
-  public String getNextRevisionId(File path) {
-    throw new RuntimeException("Operation getNextRevisionId() not supported by the GIT handler");
+  public long getCurrentRevisionId(File path) {
+    throw new RuntimeException("Operation getCurrentRevisionId() not supported by the GIT handler");
   }
 
   @Override

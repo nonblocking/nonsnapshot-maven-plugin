@@ -57,12 +57,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
   private static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-  private String timestamp;
-
   @Override
   protected void internalExecute() {
-    setTimestamp();
-
     List<Model> mavenModels = getModuleTraverser().findAllModules(getMavenProject(), getMavenProject().getActiveProfiles());
 
     List<MavenModule> mavenModules = buildModules(mavenModels);
@@ -161,7 +157,14 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         } else {
           if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
-            boolean changes = getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), qualifierString);
+            boolean changes = false;
+            try {
+              changes = getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), Long.parseLong(qualifierString));
+            } catch (NumberFormatException e) {
+              LOG.warn("Invalid SVN revision: {}", qualifierString);
+              changes = true;
+            }
+
             if (changes) {
               LOG.info("Module {}:{}: Revision number is different from the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
@@ -239,21 +242,16 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
   private void setNextRevisionOnDirtyArtifacts(List<MavenModule> mavenModules) {
     for (MavenModule mavenModule : mavenModules) {
-      File modulesPath;
-      try {
-        modulesPath = mavenModule.getPomFile().getParentFile().getCanonicalFile();
-      } catch (IOException e) {
-        throw new NonSnapshotPluginException("Unexpected IO exception", e);
-      }
+      File modulesPath = mavenModule.getPomFile().getParentFile();
 
       if (mavenModule.isDirty()) {
         if (!getScmHandler().isWorkingCopy(modulesPath)) {
           throw new NonSnapshotPluginException("Module path is no working directory: " + modulesPath);
         }
         if (isUseSvnRevisionQualifier()) {
-          mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getNextRevisionId(modulesPath));
+          mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getCurrentRevisionId(modulesPath));
         } else {
-          mavenModule.setNewVersion(getBaseVersion() + "-" + this.timestamp);
+          mavenModule.setNewVersion(getBaseVersion() + "-" + new SimpleDateFormat(getTimestampQualifierPattern()).format(getScmHandler().getLastCommitDate(modulesPath)));
         }
       }
     }
@@ -369,10 +367,6 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
   private boolean isWindows() {
     return System.getProperty("os.name").toLowerCase().contains("win");
-  }
-
-  private void setTimestamp() {
-    this.timestamp = new SimpleDateFormat(getTimestampQualifierPattern()).format(new Date());
   }
 
   private void dumpArtifactTreeToLog(MavenModule rootModule) {

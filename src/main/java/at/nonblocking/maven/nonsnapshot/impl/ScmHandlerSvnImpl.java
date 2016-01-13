@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
 import org.tmatesoft.svn.core.wc.SVNRevision;
@@ -48,8 +47,6 @@ public class ScmHandlerSvnImpl implements ScmHandler {
 
   private SVNClientManager svnClientManager = SVNClientManager.newInstance();
 
-  private String cachedNextRevision;
-
   public ScmHandlerSvnImpl() {
   }
 
@@ -59,12 +56,12 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, String revisionId) {
+  public boolean checkChangesSinceRevision(final File moduleDirectory, long revisionId) {
     final Boolean[] changes = new Boolean[1];
     changes[0] = false;
 
     try {
-      final long revisionNr = Long.parseLong(revisionId);
+      final long revisionNr = revisionId;
 
       this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
           SVNRevision.WORKING,
@@ -82,10 +79,6 @@ public class ScmHandlerSvnImpl implements ScmHandler {
               }
             }
           });
-
-    } catch (NumberFormatException e) {
-      LOG.warn("Invalid SVN revision: {}", revisionId);
-      return true;
 
     } catch (SVNException e) {
       LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
@@ -127,29 +120,28 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public String getNextRevisionId(File path) {
-    if (this.cachedNextRevision == null) {
-      try {
-        SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
-
-        LOG.debug("Try to obtain next revision of repository: {}", info.getRepositoryRootURL());
-
-        SVNRepository repository = this.svnClientManager.createRepository(info.getRepositoryRootURL(), false);
-
-        this.cachedNextRevision = String.valueOf(repository.getLatestRevision() + 1);
-      } catch (SVNException e) {
-        throw new NonSnapshotPluginException("Failed to obtain next revision number for path: " + path.getAbsolutePath(), e);
-      }
+  public Date getLastCommitDate(File path) {
+    try {
+      SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
+      return info.getCommittedDate();
+    } catch (SVNException e) {
+      throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
     }
+  }
 
-    return this.cachedNextRevision;
+  @Override
+  public long getCurrentRevisionId(File path) {
+    try {
+      SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
+      return info.getRevision().getNumber();
+    } catch (SVNException e) {
+      throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
+    }
   }
 
   @Override
   public void commitFiles(List<File> files, String commitMessage) {
     LOG.debug("Committing files: {}", files);
-
-    this.cachedNextRevision = null;
 
     try {
       SVNCommitInfo info = this.svnClientManager.getCommitClient().doCommit(files.toArray(new File[files.size()]), false, commitMessage,

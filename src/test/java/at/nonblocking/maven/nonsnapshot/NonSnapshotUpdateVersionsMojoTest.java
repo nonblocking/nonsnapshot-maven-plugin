@@ -93,14 +93,14 @@ public class NonSnapshotUpdateVersionsMojoTest {
     when(this.mockMavenPomHandler.readArtifact(model4)).thenReturn(wsArtifact4);
     when(this.mockMavenPomHandler.readArtifact(model5)).thenReturn(wsArtifact5);
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), 1234)).thenReturn(true);
 
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
 
-    when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile().getCanonicalFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom4.getParentFile().getCanonicalFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom5.getParentFile().getCanonicalFile())).thenReturn("1234");
+    when(this.mockScmHandler.getCurrentRevisionId(pom1.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom4.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom5.getParentFile())).thenReturn(1234L);
 
     this.nonSnapshotMojo.setScmType(SCM_TYPE.SVN);
     this.nonSnapshotMojo.setUseSvnRevisionQualifier(true);
@@ -123,8 +123,8 @@ public class NonSnapshotUpdateVersionsMojoTest {
 
     inOrder.verify(this.mockDependencyTreeProcessor).buildDependencyTree(artifactList);
 
-    inOrder.verify(this.mockScmHandler, times(1)).checkChangesSinceRevision(pom2.getParentFile(), "1234");
-    inOrder.verify(this.mockScmHandler, times(1)).checkChangesSinceRevision(pom4.getParentFile(), "1234");
+    inOrder.verify(this.mockScmHandler, times(1)).checkChangesSinceRevision(pom2.getParentFile(), 1234);
+    inOrder.verify(this.mockScmHandler, times(1)).checkChangesSinceRevision(pom4.getParentFile(), 1234);
 
     inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact1);
     verify(this.mockMavenPomHandler, never()).updateArtifact(wsArtifact2);
@@ -176,8 +176,14 @@ public class NonSnapshotUpdateVersionsMojoTest {
     when(this.mockMavenPomHandler.readArtifact(model4)).thenReturn(wsArtifact4);
     when(this.mockMavenPomHandler.readArtifact(model5)).thenReturn(wsArtifact5);
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+    when(this.mockScmHandler.getLastCommitDate(pom1.getParentFile())).thenReturn(currentTime);
+    when(this.mockScmHandler.getLastCommitDate(pom2.getParentFile())).thenReturn(currentTime);
+    when(this.mockScmHandler.getLastCommitDate(pom3.getParentFile())).thenReturn(currentTime);
+    when(this.mockScmHandler.getLastCommitDate(pom4.getParentFile())).thenReturn(currentTime);
+    when(this.mockScmHandler.getLastCommitDate(pom5.getParentFile())).thenReturn(currentTime);
+
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), 1234)).thenReturn(true);
 
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
 
@@ -201,8 +207,8 @@ public class NonSnapshotUpdateVersionsMojoTest {
 
     inOrder.verify(this.mockDependencyTreeProcessor).buildDependencyTree(artifactList);
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), 1234)).thenReturn(true);
 
     inOrder.verify(this.mockMavenPomHandler, times(1)).updateArtifact(wsArtifact1);
     verify(this.mockMavenPomHandler, never()).updateArtifact(wsArtifact2);
@@ -260,14 +266,14 @@ public class NonSnapshotUpdateVersionsMojoTest {
     when(this.mockMavenPomHandler.readArtifact(model4)).thenReturn(wsArtifact4);
     when(this.mockMavenPomHandler.readArtifact(model5)).thenReturn(wsArtifact5);
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), 1234)).thenReturn(true);
 
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);;
 
-    when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom4.getParentFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom5.getParentFile())).thenReturn("1234");
+    when(this.mockScmHandler.getCurrentRevisionId(pom1.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom4.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom5.getParentFile())).thenReturn(1234L);
 
     this.nonSnapshotMojo.setScmType(SCM_TYPE.SVN);
     this.nonSnapshotMojo.setUseSvnRevisionQualifier(true);
@@ -321,14 +327,14 @@ public class NonSnapshotUpdateVersionsMojoTest {
     when(this.mockMavenPomHandler.readArtifact(model4)).thenReturn(wsArtifact4);
     when(this.mockMavenPomHandler.readArtifact(model5)).thenReturn(wsArtifact5);
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), "1234")).thenReturn(true);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom4.getParentFile(), 1234)).thenReturn(true);
 
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);;
 
-    when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom4.getParentFile())).thenReturn("1234");
-    when(this.mockScmHandler.getNextRevisionId(pom5.getParentFile())).thenReturn("1234");
+    when(this.mockScmHandler.getCurrentRevisionId(pom1.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom4.getParentFile())).thenReturn(1234L);
+    when(this.mockScmHandler.getCurrentRevisionId(pom5.getParentFile())).thenReturn(1234L);
 
     this.nonSnapshotMojo.setScmType(SCM_TYPE.SVN);
     this.nonSnapshotMojo.setUseSvnRevisionQualifier(true);
@@ -383,10 +389,10 @@ public class NonSnapshotUpdateVersionsMojoTest {
       }
     });
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom1.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom1.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
-    when(this.mockScmHandler.getNextRevisionId(pom2.getParentFile().getCanonicalFile())).thenReturn("6677");
+    when(this.mockScmHandler.getCurrentRevisionId(pom2.getParentFile())).thenReturn(6677L);
 
     when(this.mockUpstreamDependencyHandler.processDependencyList(upstreamDependencyString)).thenReturn(upstreamDependencies);
     when(this.mockUpstreamDependencyHandler.findMatch(upstreamDep1, upstreamDependencies)).thenReturn(upstreamDependency);
@@ -448,10 +454,10 @@ public class NonSnapshotUpdateVersionsMojoTest {
       }
     });
 
-    when(this.mockScmHandler.checkChangesSinceRevision(pom1.getParentFile(), "1234")).thenReturn(false);
-    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), "1234")).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom1.getParentFile(), 1234)).thenReturn(false);
+    when(this.mockScmHandler.checkChangesSinceRevision(pom2.getParentFile(), 1234)).thenReturn(false);
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
-    when(this.mockScmHandler.getNextRevisionId(pom2.getParentFile().getCanonicalFile())).thenReturn("6677");
+    when(this.mockScmHandler.getCurrentRevisionId(pom2.getParentFile())).thenReturn(6677L);
 
     when(this.mockUpstreamDependencyHandler.processDependencyList(upstreamDependencyString)).thenReturn(upstreamDependencies);
     when(this.mockUpstreamDependencyHandler.findMatch(upstreamDep1, upstreamDependencies)).thenReturn(upstreamDependency);
@@ -522,8 +528,8 @@ public class NonSnapshotUpdateVersionsMojoTest {
     when(this.mockModuleTraverser.findAllModules(mavenProject, Collections.<Profile>emptyList())).thenReturn(Arrays.asList(model1));
     when(this.mockMavenPomHandler.readArtifact(model1)).thenReturn(wsArtifact1);
 
-    //when(this.mockScmHandler.getRevisionId(pom1.getParentFile())).thenReturn("1333");
-    when(this.mockScmHandler.getNextRevisionId(pom1.getParentFile())).thenReturn("1444");
+    when(this.mockScmHandler.getLastCommitDate(pom1.getParentFile())).thenReturn(new Date());
+    when(this.mockScmHandler.getCurrentRevisionId(pom1.getParentFile())).thenReturn(1444L);
     when(this.mockScmHandler.isWorkingCopy(any(File.class))).thenReturn(true);
 
     this.nonSnapshotMojo.execute();
