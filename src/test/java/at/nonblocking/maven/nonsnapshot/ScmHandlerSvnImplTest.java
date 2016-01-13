@@ -6,10 +6,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.impl.ScmHandlerSvnImpl;
 
@@ -19,11 +17,6 @@ public class ScmHandlerSvnImplTest {
   private static final String SVN_USER = "???";
   private static final String SVN_PASSWORD = "???";
   private static final String SVN_TEST_FOLDER = "???";
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Test
   public void testCheckChangesSinceRevision() throws Exception {

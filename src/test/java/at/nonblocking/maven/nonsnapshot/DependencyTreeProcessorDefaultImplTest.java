@@ -5,9 +5,7 @@ import static junit.framework.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.impl.DependencyTreeProcessorDefaultImpl;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
@@ -15,11 +13,6 @@ import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 public class DependencyTreeProcessorDefaultImplTest {
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Test
   public void testBuildDependencyTree() {

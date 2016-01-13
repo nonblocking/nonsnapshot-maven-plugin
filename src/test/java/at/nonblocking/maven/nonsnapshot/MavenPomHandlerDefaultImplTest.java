@@ -10,19 +10,12 @@ import java.io.FileReader;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.IOUtil;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.impl.MavenPomHandlerDefaultImpl;
 import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
 public class MavenPomHandlerDefaultImplTest {
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Test
   public void testReadArtifact() throws Exception {

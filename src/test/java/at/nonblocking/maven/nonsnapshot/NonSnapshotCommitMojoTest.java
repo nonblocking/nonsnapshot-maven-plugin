@@ -9,9 +9,7 @@ import java.util.Arrays;
 
 import org.apache.maven.project.MavenProject;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.impl.StaticLoggerBinder;
 
 public class NonSnapshotCommitMojoTest {
 
@@ -21,11 +19,6 @@ public class NonSnapshotCommitMojoTest {
   private MavenPomHandler mockMavenPomHandler = mock(MavenPomHandler.class);
   private ScmHandler mockScmHandler = mock(ScmHandler.class);
   private UpstreamDependencyHandler mockUpstreamDependencyHandler = mock(UpstreamDependencyHandler.class);
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Before
   public void setupMojo() {

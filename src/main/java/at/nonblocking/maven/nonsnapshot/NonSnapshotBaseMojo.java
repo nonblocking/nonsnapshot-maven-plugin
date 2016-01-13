@@ -36,7 +36,6 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
@@ -155,8 +154,6 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
   private PlexusContainer plexusContainer;
 
   public void execute() throws MojoExecutionException, MojoFailureException {
-    StaticLoggerBinder.getSingleton().setLog(this.getLog());
-
     if (this.skip) {
       LOG.info("NonSnapshot Plugin has been disabled for this project.");
       return;

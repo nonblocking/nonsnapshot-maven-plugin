@@ -1,10 +1,8 @@
 package at.nonblocking.maven.nonsnapshot;
 
 import at.nonblocking.maven.nonsnapshot.impl.ScmHandlerGitImpl;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -20,11 +18,6 @@ public class ScmHandlerGitImplTest {
 
   private static final String SCM_PASSPHRASE = "???";
   private static final String GIT_TEST_FOLDER = "???";
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Test
   public void testGetLastCommitDate() throws Exception {

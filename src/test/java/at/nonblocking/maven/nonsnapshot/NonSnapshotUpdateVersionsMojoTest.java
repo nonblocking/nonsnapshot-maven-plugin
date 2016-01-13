@@ -16,12 +16,10 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 
@@ -33,11 +31,6 @@ public class NonSnapshotUpdateVersionsMojoTest {
   private MavenPomHandler mockMavenPomHandler = mock(MavenPomHandler.class);
   private ScmHandler mockScmHandler = mock(ScmHandler.class);
   private UpstreamDependencyHandler mockUpstreamDependencyHandler = mock(UpstreamDependencyHandler.class);
-
-  @BeforeClass
-  public static void setupLog() {
-    StaticLoggerBinder.getSingleton().setLog(new DebugSystemStreamLog());
-  }
 
   @Before
   public void setupMojo() {
