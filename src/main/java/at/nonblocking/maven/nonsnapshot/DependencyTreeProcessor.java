@@ -50,9 +50,9 @@ public interface DependencyTreeProcessor {
   /**
    * Print the artifact tree found in the workspace for debug purposes.
    *
-   * @param rootModule MavenModule
-   * @param printStream   PrintStream
+   * @param mavenModules List<MavenModule>
+   * @param printStream PrintStream
    */
-  void printMavenModuleTree(MavenModule rootModule, PrintStream printStream);
+  void printMavenModulesTree(List<MavenModule> mavenModules, PrintStream printStream);
 
 }

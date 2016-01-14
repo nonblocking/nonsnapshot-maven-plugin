@@ -51,10 +51,11 @@ public interface ScmHandler {
    * Check if there has been changes since given revisionId
    *
    * @param moduleDirectory File
-   * @param revisionId long
+   * @param sinceRevision long
+   * @param workspaceRevision long
    * @return boolean
    */
-  boolean checkChangesSinceRevision(File moduleDirectory, long revisionId);
+  boolean checkChangesSinceRevision(File moduleDirectory, long sinceRevision, long workspaceRevision);
 
   /**
    * Get date of last commit within given path.
@@ -68,10 +69,11 @@ public interface ScmHandler {
    * Check if there has been changes since given date
    *
    * @param moduleDirectory File
-   * @param date Date
+   * @param sinceDate Date
+   * @param workspaceLastCommitDate Date
    * @return boolean
    */
-  boolean checkChangesSinceDate(File moduleDirectory, Date date);
+  boolean checkChangesSinceDate(File moduleDirectory, Date sinceDate, Date workspaceLastCommitDate);
 
 
   /**

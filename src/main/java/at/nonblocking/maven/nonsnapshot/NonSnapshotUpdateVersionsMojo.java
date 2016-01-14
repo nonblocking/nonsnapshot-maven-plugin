@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,8 +64,6 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
     List<MavenModule> mavenModules = buildModules(mavenModels);
 
-    MavenModule rootModule = mavenModules.get(0);
-
     getDependencyTreeProcessor().buildDependencyTree(mavenModules);
 
     markDirtyWhenRevisionChangedOrInvalidQualifier(mavenModules);
@@ -81,7 +80,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
     setNextRevisionOnDirtyArtifacts(mavenModules);
 
-    dumpArtifactTreeToLog(rootModule);
+    dumpArtifactTreeToLog(mavenModules);
 
     writeAndCommitArtifacts(mavenModules);
   }
@@ -157,35 +156,34 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
         } else {
           if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
-            boolean changes = false;
+
             try {
-              changes = getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), Long.parseLong(qualifierString));
+              long currentRev = getScmHandler().getCurrentRevisionId(mavenModule.getPomFile().getParentFile());
+              long revFromQualifier = Long.parseLong(qualifierString);
+              if (revFromQualifier != currentRev && getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), revFromQualifier, currentRev)) {
+                LOG.info("Module {}:{}: There were commits after the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                mavenModule.setDirty(true);
+              }
             } catch (NumberFormatException e) {
               LOG.warn("Invalid SVN revision: {}", qualifierString);
-              changes = true;
-            }
-
-            if (changes) {
-              LOG.info("Module {}:{}: Revision number is different from the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }
+
           } else {
 
             //Default: compare timestamps
 
-            boolean changes;
-
             try {
-              Date versionTimestamp = new SimpleDateFormat(getTimestampQualifierPattern()).parse(qualifierString);
-              changes = getScmHandler().checkChangesSinceDate(mavenModule.getPomFile().getParentFile(), versionTimestamp);
+              DateFormat dateFormat = new SimpleDateFormat(getTimestampQualifierPattern());
+              Date dateFromQualifier = dateFormat.parse(qualifierString);
+              Date lastCommitDate = dateFormat.parse(dateFormat.format(getScmHandler().getLastCommitDate(mavenModule.getPomFile().getParentFile())));
+              if (!dateFromQualifier.equals(lastCommitDate) && getScmHandler().checkChangesSinceDate(mavenModule.getPomFile().getParentFile(), dateFromQualifier, lastCommitDate)) {
+                LOG.info("Module {}:{}: There were commits after the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                mavenModule.setDirty(true);
+              }
             } catch (ParseException e) {
               LOG.debug("Module {}:{}: Invalid timestamp qualifier: {}",
                   new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), qualifierString});
-              changes = true;
-            }
-
-            if (changes) {
-              LOG.info("Module {}:{}: There were commits after the timestamp in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
               mavenModule.setDirty(true);
             }
           }
@@ -369,9 +367,9 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
     return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
-  private void dumpArtifactTreeToLog(MavenModule rootModule) {
+  private void dumpArtifactTreeToLog(List<MavenModule> modules) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    getDependencyTreeProcessor().printMavenModuleTree(rootModule, new PrintStream(baos));
+    getDependencyTreeProcessor().printMavenModulesTree(modules, new PrintStream(baos));
     LOG.info("\n" + baos.toString());
   }
 }

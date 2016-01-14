@@ -125,8 +125,12 @@ public class DependencyTreeProcessorDefaultImpl implements DependencyTreeProcess
   }
 
   @Override
-  public void printMavenModuleTree(MavenModule rootModule, PrintStream printStream) {
-    printTree(rootModule, printStream, 0);
+  public void printMavenModulesTree(List<MavenModule> mavenModules, PrintStream printStream) {
+    for (MavenModule module : mavenModules) {
+      if (module.getParent() == null || !(module.getParent() instanceof MavenModule)) {
+        printTree(module, printStream, 0);
+      }
+    }
   }
 
   private void printTree(MavenArtifact artifact, PrintStream printStream, int level) {

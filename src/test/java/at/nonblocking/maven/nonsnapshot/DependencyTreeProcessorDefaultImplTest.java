@@ -31,7 +31,7 @@ public class DependencyTreeProcessorDefaultImplTest {
     wsArtifact4.setParent(new MavenArtifact("at.nonblocking.at", "test1", "1.0.0"));
     wsArtifact5.setParent(new MavenArtifact("at.nonblocking.at", "parent", "1.0.0"));
 
-    List<MavenModule> artifacts = new ArrayList<MavenModule>();
+    List<MavenModule> artifacts = new ArrayList<>();
     artifacts.add(wsArtifact1);
     artifacts.add(wsArtifact2);
     artifacts.add(wsArtifact3);
@@ -43,7 +43,7 @@ public class DependencyTreeProcessorDefaultImplTest {
 
     dependencyTreeProcessor.buildDependencyTree(artifacts);
 
-    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
+    dependencyTreeProcessor.printMavenModulesTree(artifacts, System.out);
   }
 
   @Test
@@ -55,7 +55,7 @@ public class DependencyTreeProcessorDefaultImplTest {
     wsArtifact2.getDependencies().add(new MavenModuleDependency(0, wsArtifact3));
     wsArtifact3.setDirty(true);
 
-    List<MavenModule> artifacts = new ArrayList<MavenModule>();
+    List<MavenModule> artifacts = new ArrayList<>();
     artifacts.add(wsArtifact1);
     artifacts.add(wsArtifact2);
     artifacts.add(wsArtifact3);
@@ -72,7 +72,7 @@ public class DependencyTreeProcessorDefaultImplTest {
     assertTrue(wsArtifact2.isDirty());
     assertTrue(wsArtifact3.isDirty());
 
-    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
+    dependencyTreeProcessor.printMavenModulesTree(artifacts, System.out);
   }
 
   @Test
@@ -87,7 +87,7 @@ public class DependencyTreeProcessorDefaultImplTest {
     wsArtifact2.getDependencies().add(new MavenModuleDependency(0, wsArtifact3));
     wsArtifact3.setDirty(true);
 
-    List<MavenModule> artifacts = new ArrayList<MavenModule>();
+    List<MavenModule> artifacts = new ArrayList<>();
     artifacts.add(wsArtifact1);
     artifacts.add(wsArtifact2);
     artifacts.add(wsArtifact3);
@@ -106,6 +106,6 @@ public class DependencyTreeProcessorDefaultImplTest {
     assertTrue(wsArtifact3.isDirty());
     assertTrue(wsArtifact4.isDirty());
 
-    dependencyTreeProcessor.printMavenModuleTree(wsArtifact1, System.out);
+    dependencyTreeProcessor.printMavenModulesTree(artifacts, System.out);
   }
 }

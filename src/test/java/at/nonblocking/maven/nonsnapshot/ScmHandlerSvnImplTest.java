@@ -25,7 +25,7 @@ public class ScmHandlerSvnImplTest {
     ScmHandler scmService = new ScmHandlerSvnImpl();
     scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
-    boolean changes = scmService.checkChangesSinceRevision(path, 26505);
+    boolean changes = scmService.checkChangesSinceRevision(path, 26505, 100000);
 
     assertTrue(changes);
   }
@@ -37,7 +37,7 @@ public class ScmHandlerSvnImplTest {
     ScmHandler scmService = new ScmHandlerSvnImpl();
     scmService.init(null, SVN_USER, SVN_PASSWORD, null);
 
-    boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 9, 26));
+    boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 9, 26), new Date());
 
     assertTrue(changes);
   }

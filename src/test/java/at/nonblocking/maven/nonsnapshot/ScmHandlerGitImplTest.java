@@ -37,7 +37,7 @@ public class ScmHandlerGitImplTest {
     ScmHandler scmService = new ScmHandlerGitImpl();
     scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
 
-    boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 7, 26));
+    boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 7, 26), new Date());
 
     assertTrue(changes);
   }

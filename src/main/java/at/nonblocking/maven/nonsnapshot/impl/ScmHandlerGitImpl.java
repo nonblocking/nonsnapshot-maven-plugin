@@ -86,12 +86,12 @@ public class ScmHandlerGitImpl implements ScmHandler {
   }
 
   @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, long revisionId) {
+  public boolean checkChangesSinceRevision(final File moduleDirectory, long sinceRevision, long workspaceRevision) {
     throw new RuntimeException("Operation checkChangesSinceRevision() not supported by the GIT handler");
   }
 
   @Override
-  public boolean checkChangesSinceDate(final File moduleDirectory, final Date date) {
+  public boolean checkChangesSinceDate(File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
     if (this.git == null) {
       return false;
     }
@@ -109,7 +109,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
 
       for (RevCommit commit : logCommand.call()) {
         Date commitTime = new Date(commit.getCommitTime() * 1000L);
-        if (commitTime.after(date)) {
+        if (commitTime.after(sinceDate)) {
           if (!commit.getFullMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
             LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
                 new Object[]{moduleDirectory.getAbsolutePath(), commit.getId(), commitTime, commit.getFullMessage()});

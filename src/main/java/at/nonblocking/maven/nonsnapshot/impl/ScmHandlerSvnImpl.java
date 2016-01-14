@@ -16,6 +16,7 @@
 package at.nonblocking.maven.nonsnapshot.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -52,27 +53,25 @@ public class ScmHandlerSvnImpl implements ScmHandler {
 
   @Override
   public boolean isWorkingCopy(File path) {
-    return SVNWCUtil.isVersionedDirectory(path);
+    return SVNWCUtil.isVersionedDirectory(toCanonicalPath(path));
   }
 
   @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, long revisionId) {
+  public boolean checkChangesSinceRevision(final File moduleDirectory, final long sinceRevision, final long workspaceRevision) {
     final Boolean[] changes = new Boolean[1];
     changes[0] = false;
 
     try {
-      final long revisionNr = revisionId;
-
-      this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+      this.svnClientManager.getLogClient().doLog(new File[] { moduleDirectory },
           SVNRevision.WORKING,
-          SVNRevision.create(revisionNr),
-          SVNRevision.WORKING,
+          SVNRevision.create(sinceRevision + 1),
+          SVNRevision.create(workspaceRevision),
           false, false,
           100L,
           new ISVNLogEntryHandler() {
             @Override
             public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
-              if (svnLogEntry.getRevision() >= revisionNr && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+              if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
                 LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
                     new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
                 changes[0] = true;
@@ -89,21 +88,21 @@ public class ScmHandlerSvnImpl implements ScmHandler {
   }
 
   @Override
-  public boolean checkChangesSinceDate(final File moduleDirectory, final Date date) {
+  public boolean checkChangesSinceDate(final File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
     final Boolean[] changes = new Boolean[1];
     changes[0] = false;
 
     try {
-      this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+      this.svnClientManager.getLogClient().doLog(new File[] { moduleDirectory },
           SVNRevision.WORKING,
-          SVNRevision.create(date),
-          SVNRevision.WORKING,
+          SVNRevision.create(sinceDate),
+          SVNRevision.create(workspaceLastCommitDate),
           false, true,
           100L,
           new ISVNLogEntryHandler() {
             @Override
             public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
-              if (svnLogEntry.getDate().after(date) && !svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+              if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
                 LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
                     new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
                 changes[0] = true;
@@ -166,6 +165,14 @@ public class ScmHandlerSvnImpl implements ScmHandler {
 
     ISVNAuthenticationManager authManager = new BasicAuthenticationManager(scmUser, scmPassword);
     this.svnClientManager.setAuthenticationManager(authManager);
+  }
+
+  private File toCanonicalPath(File path) {
+    try {
+      return path.getCanonicalFile();
+    } catch (IOException e) {
+      throw new NonSnapshotPluginException(e.getMessage(), e);
+    }
   }
 
 }
