@@ -78,7 +78,7 @@ public class ScmHandlerGitImpl implements ScmHandler {
       }
 
       RevCommit lastCommit = logCommand.call().iterator().next();
-      return new Date(lastCommit.getCommitTime() * 1000);
+      return new Date(lastCommit.getCommitTime() * 1000L);
 
     } catch (Exception e) {
       throw new NonSnapshotPluginException("Failed to determine last commit date!", e);
