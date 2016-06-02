@@ -39,7 +39,7 @@ public interface ScmHandler {
 
   /**
    * Get the current revision id of this path.
-   * <br/>
+   * <br>
    * Only supported by SVN. Other implementations may throw NotImplementedExceptions.
    *
    * @param path File
@@ -79,7 +79,7 @@ public interface ScmHandler {
   /**
    * Commit the given path to the remote repository.
    *
-   * @param files         List<File>
+   * @param files         List&lt;File&gt;
    * @param commitMessage String
    */
   void commitFiles(List<File> files, String commitMessage);

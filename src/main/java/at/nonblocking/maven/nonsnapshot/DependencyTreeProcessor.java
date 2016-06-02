@@ -29,20 +29,20 @@ public interface DependencyTreeProcessor {
 
   /**
    * Build an dependency tree from given artifact list.
-   * <br/><br/>
+   * <br><br>
    * Replace all parent, children and dependency references through references of actual
    * WorkspaceArtifacts from the given list.
-   * <br/><br/>
+   * <br><br>
    * Returns a list of root artifacts, with parent == null.
    *
-   * @param modules List<MavenModule - List of all workspace artifacts
+   * @param modules List&lt;MavenModule&gt; - List of all workspace artifacts
    */
   void buildDependencyTree(List<MavenModule> modules);
 
   /**
    * Mark all artifacts with dirty dependencies dirty.
    *
-   * @param modules List<MavenModule>
+   * @param modules List&lt;MavenModule&gt;
    * @return boolean True if any new artifacts have been marked dirty
    */
   boolean markAllArtifactsDirtyWithDirtyDependencies(List<MavenModule> modules);
@@ -50,7 +50,7 @@ public interface DependencyTreeProcessor {
   /**
    * Print the artifact tree found in the workspace for debug purposes.
    *
-   * @param mavenModules List<MavenModule>
+   * @param mavenModules List&lt;MavenModule&gt;
    * @param printStream PrintStream
    */
   void printMavenModulesTree(List<MavenModule> mavenModules, PrintStream printStream);

@@ -32,8 +32,8 @@ public interface ModuleTraverser {
    * Find (recursively) all Maven modules
    *
    * @param baseProject MavenProject
-   * @param activeProfiles List<Profile>
-   * @return List<Model>
+   * @param activeProfiles List&lt;Profile&gt;
+   * @return List&lt;Model&gt;
    */
   List<Model> findAllModules(MavenProject baseProject, List<Profile> activeProfiles);
 

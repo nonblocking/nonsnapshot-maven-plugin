@@ -33,18 +33,18 @@ public interface UpstreamDependencyHandler {
   /**
    * Process the upstream dependency list from the configuration and create objects from it.
    *
-   * @param upstreamDependencyStrings List<String>
-   * @return List<ProcessedUpstreamDependency>
+   * @param upstreamDependencyStrings List&lt;String&gt;
+   * @return List&lt;ProcessedUpstreamDependency&gt;
    */
   List<ProcessedUpstreamDependency> processDependencyList(List<String> upstreamDependencyStrings);
 
   /**
    * Find a matching upstream dependency declaration for given maven artifact.
-   * <br/>
+   * <br>
    * Used to decide if a given dependency is an upstream dependency.
    *
    * @param mavenArtifact MavenArtifact
-   * @param upstreamDependencies List<ProcessedUpstreamDependency>
+   * @param upstreamDependencies List&lt;ProcessedUpstreamDependency&gt;
    * @return ProcessedUpstreamDependency
    */
   ProcessedUpstreamDependency findMatch(MavenArtifact mavenArtifact, List<ProcessedUpstreamDependency> upstreamDependencies);
@@ -56,7 +56,7 @@ public interface UpstreamDependencyHandler {
    * @param upstreamDependency UpstreamDependency
    * @param repositorySystem RepositorySystem
    * @param repositorySystemSession RepositorySystemSession
-   * @param remoteRepositories List<RemoteRepository>
+   * @param remoteRepositories List&lt;RemoteRepository&gt;
    * @return String
    * @throws NonSnapshotDependencyResolverException
    */

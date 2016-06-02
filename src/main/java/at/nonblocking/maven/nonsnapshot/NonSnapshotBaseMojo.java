@@ -41,7 +41,7 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
 /**
  * Base class for NonSnapshot Plugin Mojos.
- * <br/>
+ * <br>
  * Does all the parameter handling.
  *
  * @author Juergen Kofler
