@@ -46,7 +46,7 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 		<plugin>
 			<groupId>at.nonblocking</groupId>
 			<artifactId>nonsnapshot-maven-plugin</artifactId>
-			<version>2.0.9</version>
+			<version>3.0.0</version>
 			<configuration>
 				<baseVersion>1.2.3</baseVersion>
 				<scmType>SVN</scmType>
@@ -70,13 +70,6 @@ The plugin can be added to a separate (POM-) project or your main aggregator pro
 		</plugin>
 	</plugins>
 </build>
-
-<pluginRepositories>
-	<pluginRepository>
-		<id>jcenter</id>
-		<url>http://jcenter.bintray.com</url>
-	</pluginRepository>
-</pluginRepositories>
 
 ```
 
