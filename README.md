@@ -1,6 +1,9 @@
 Nonsnapshot Maven Plugin
 ========================
 
+A Maven plugin to get rid of SNAPSHOT versions and automatically update artifact versions with each build if anything changes.
+Such a change can be a scm commit since the last build or a newly available upstream dependency version within a configured range.
+
 Motivation
 ----------
 
@@ -14,8 +17,6 @@ dealing with SNAPSHOT versions really becomes unhandy. The main reasons are:
 
 How this plugin works
 ---------------------
-
-The aim of this plugin is to get rid of SNAPSHOT versions and periodically auto-release the whole project with all artifacts.
 
 The algorithm works as follows:
 

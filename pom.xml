@@ -9,6 +9,10 @@
     <packaging>maven-plugin</packaging>
 
     <name>Maven Nonsnapshot Plugin</name>
+    <description>
+        A Maven plugin to get rid of SNAPSHOT versions and automatically update artifact versions with each build if anything changes.
+        Such a change can be a scm commit since the last build or a newly available upstream dependency version within a configured range.
+    </description>
     <url>https://github.com/nonblocking/maven-nonsnapshot-plugin</url>
 
     <licenses>
