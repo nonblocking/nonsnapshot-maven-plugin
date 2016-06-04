@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>at.nonblocking</groupId>
     <artifactId>nonsnapshot-maven-plugin</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>maven-plugin</packaging>
 
     <name>Maven Nonsnapshot Plugin</name>
@@ -20,17 +20,17 @@
 
     <developers>
         <developer>
-            <name>nonblocking.at gmbh</name>
-            <email>office@nonblocking.at</email>
+            <name>Jürgen Kofler</name>
+            <email>juergen.kofler@nonblocking.at</email>
             <organization>nonblocking.at gmbh</organization>
             <organizationUrl>http://www.nonblocking.at</organizationUrl>
         </developer>
     </developers>
 
     <scm>
-        <connection>https://github.com/nonblocking/nonsnapshot-maven-plugin.git</connection>
-        <developerConnection>https://github.com/nonblocking/nonsnapshot-maven-plugin.git</developerConnection>
-        <url>https://github.com/nonblocking/nonsnapshot-maven-plugin</url>
+        <connection>scm:git:git@github.com:nonblocking/nonsnapshot-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:nonblocking/nonsnapshot-maven-plugin.git</developerConnection>
+        <url>git@github.com:nonblocking/nonsnapshot-maven-plugin.git</url>
     </scm>
 
     <properties>
@@ -151,7 +151,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -164,7 +163,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -176,5 +174,51 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>deploy-central</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.3</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 
 </project>
