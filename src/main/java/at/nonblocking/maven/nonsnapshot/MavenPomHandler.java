@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,27 +27,27 @@ import org.apache.maven.model.Model;
  */
 public interface MavenPomHandler {
 
-  /**
-   * Convert given POM model to a WorkspaceArtifact object.
-   *
-   * @param model Model
-   * @return WorkspaceArtifact
-   */
-  MavenModule readArtifact(Model model);
+    /**
+     * Convert given POM model to a WorkspaceArtifact object.
+     *
+     * @param model Model
+     * @return WorkspaceArtifact
+     */
+    MavenModule readArtifact(Model model);
 
-  /**
-   * Read the POM model from given file and return a completely filled WorkspaceArtifact object.
-   *
-   * @param pomFile File
-   * @return WorkspaceArtifact
-   */
-  MavenModule readArtifact(File pomFile);
+    /**
+     * Read the POM model from given file and return a completely filled WorkspaceArtifact object.
+     *
+     * @param pomFile File
+     * @return WorkspaceArtifact
+     */
+    MavenModule readArtifact(File pomFile);
 
-  /**
-   * Update the project version and all the versions of dirty dependencies.
-   *
-   * @param workspaceArtifact WorkspaceArtifact
-   */
-  void updateArtifact(MavenModule workspaceArtifact);
+    /**
+     * Update the project version and all the versions of dirty dependencies.
+     *
+     * @param workspaceArtifact WorkspaceArtifact
+     */
+    void updateArtifact(MavenModule workspaceArtifact);
 
 }

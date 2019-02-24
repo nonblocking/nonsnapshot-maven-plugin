@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,88 +26,88 @@ import java.util.List;
  */
 public class MavenModule extends MavenArtifact {
 
-  private File pomFile;
+    private File pomFile;
 
-  private boolean insertVersionTag;
-  private int versionLocation;
+    private boolean insertVersionTag;
+    private int versionLocation;
 
-  private MavenArtifact parent;
-  private int parentVersionLocation;
+    private MavenArtifact parent;
+    private int parentVersionLocation;
 
-  private List<MavenModule> children = new ArrayList<MavenModule>();
+    private List<MavenModule> children = new ArrayList<MavenModule>();
 
-  private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
+    private List<MavenModuleDependency> dependencies = new ArrayList<MavenModuleDependency>();
 
-  private String newVersion;
+    private String newVersion;
 
-  private boolean dirty;
+    private boolean dirty;
 
-  public MavenModule(File pomFile, String groupId, String artifactId, String version) {
-    super(groupId, artifactId, version);
-    this.pomFile = pomFile;
-  }
+    public MavenModule(File pomFile, String groupId, String artifactId, String version) {
+        super(groupId, artifactId, version);
+        this.pomFile = pomFile;
+    }
 
-  public File getPomFile() {
-    return pomFile;
-  }
+    public File getPomFile() {
+        return pomFile;
+    }
 
-  public void setPomFile(File pomFile) {
-    this.pomFile = pomFile;
-  }
+    public void setPomFile(File pomFile) {
+        this.pomFile = pomFile;
+    }
 
-  public boolean isInsertVersionTag() {
-    return insertVersionTag;
-  }
+    public boolean isInsertVersionTag() {
+        return insertVersionTag;
+    }
 
-  public void setInsertVersionTag(boolean insertVersionTag) {
-    this.insertVersionTag = insertVersionTag;
-  }
+    public void setInsertVersionTag(boolean insertVersionTag) {
+        this.insertVersionTag = insertVersionTag;
+    }
 
-  public int getVersionLocation() {
-    return versionLocation;
-  }
+    public int getVersionLocation() {
+        return versionLocation;
+    }
 
-  public void setVersionLocation(int versionLocation) {
-    this.versionLocation = versionLocation;
-  }
+    public void setVersionLocation(int versionLocation) {
+        this.versionLocation = versionLocation;
+    }
 
-  public int getParentVersionLocation() {
-    return parentVersionLocation;
-  }
+    public int getParentVersionLocation() {
+        return parentVersionLocation;
+    }
 
-  public void setParentVersionLocation(int parentVersionLocation) {
-    this.parentVersionLocation = parentVersionLocation;
-  }
+    public void setParentVersionLocation(int parentVersionLocation) {
+        this.parentVersionLocation = parentVersionLocation;
+    }
 
-  public MavenArtifact getParent() {
-    return parent;
-  }
+    public MavenArtifact getParent() {
+        return parent;
+    }
 
-  public void setParent(MavenArtifact parent) {
-    this.parent = parent;
-  }
+    public void setParent(MavenArtifact parent) {
+        this.parent = parent;
+    }
 
-  public boolean isDirty() {
-    return dirty;
-  }
+    public boolean isDirty() {
+        return dirty;
+    }
 
-  public void setDirty(boolean dirty) {
-    this.dirty = dirty;
-  }
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
 
-  public List<MavenModule> getChildren() {
-    return children;
-  }
+    public List<MavenModule> getChildren() {
+        return children;
+    }
 
-  public List<MavenModuleDependency> getDependencies() {
-    return dependencies;
-  }
+    public List<MavenModuleDependency> getDependencies() {
+        return dependencies;
+    }
 
-  public String getNewVersion() {
-    return newVersion;
-  }
+    public String getNewVersion() {
+        return newVersion;
+    }
 
-  public void setNewVersion(String newVersion) {
-    this.newVersion = newVersion;
-  }
+    public void setNewVersion(String newVersion) {
+        this.newVersion = newVersion;
+    }
 }

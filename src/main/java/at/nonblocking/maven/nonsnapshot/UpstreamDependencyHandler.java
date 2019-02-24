@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,38 +30,37 @@ import java.util.List;
  */
 public interface UpstreamDependencyHandler {
 
-  /**
-   * Process the upstream dependency list from the configuration and create objects from it.
-   *
-   * @param upstreamDependencyStrings List&lt;String&gt;
-   * @return List&lt;ProcessedUpstreamDependency&gt;
-   */
-  List<ProcessedUpstreamDependency> processDependencyList(List<String> upstreamDependencyStrings);
+    /**
+     * Process the upstream dependency list from the configuration and create objects from it.
+     *
+     * @param upstreamDependencyStrings List&lt;String&gt;
+     * @return List&lt;ProcessedUpstreamDependency&gt;
+     */
+    List<ProcessedUpstreamDependency> processDependencyList(List<String> upstreamDependencyStrings);
 
-  /**
-   * Find a matching upstream dependency declaration for given maven artifact.
-   * <br>
-   * Used to decide if a given dependency is an upstream dependency.
-   *
-   * @param mavenArtifact MavenArtifact
-   * @param upstreamDependencies List&lt;ProcessedUpstreamDependency&gt;
-   * @return ProcessedUpstreamDependency
-   */
-  ProcessedUpstreamDependency findMatch(MavenArtifact mavenArtifact, List<ProcessedUpstreamDependency> upstreamDependencies);
+    /**
+     * Find a matching upstream dependency declaration for given maven artifact.
+     * <br>
+     * Used to decide if a given dependency is an upstream dependency.
+     *
+     * @param mavenArtifact        MavenArtifact
+     * @param upstreamDependencies List&lt;ProcessedUpstreamDependency&gt;
+     * @return ProcessedUpstreamDependency
+     */
+    ProcessedUpstreamDependency findMatch(MavenArtifact mavenArtifact, List<ProcessedUpstreamDependency> upstreamDependencies);
 
-  /**
-   * Try to find a newer version for given upstream dependency. Return null if no newer exits.
-   *
-   * @param mavenArtifact MavenArtifact
-   * @param upstreamDependency UpstreamDependency
-   * @param repositorySystem RepositorySystem
-   * @param repositorySystemSession RepositorySystemSession
-   * @param remoteRepositories List&lt;RemoteRepository&gt;
-   * @return String
-   * @throws NonSnapshotDependencyResolverException
-   */
-  String resolveLatestVersion(MavenArtifact mavenArtifact, ProcessedUpstreamDependency upstreamDependency,
-                              RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession,
-                              List<RemoteRepository> remoteRepositories) throws NonSnapshotDependencyResolverException;
+    /**
+     * Try to find a newer version for given upstream dependency. Return null if no newer exits.
+     *
+     * @param mavenArtifact           MavenArtifact
+     * @param upstreamDependency      UpstreamDependency
+     * @param repositorySystem        RepositorySystem
+     * @param repositorySystemSession RepositorySystemSession
+     * @param remoteRepositories      List&lt;RemoteRepository&gt;
+     * @return String
+     */
+    String resolveLatestVersion(MavenArtifact mavenArtifact, ProcessedUpstreamDependency upstreamDependency,
+                                RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession,
+                                List<RemoteRepository> remoteRepositories) throws NonSnapshotDependencyResolverException;
 
 }

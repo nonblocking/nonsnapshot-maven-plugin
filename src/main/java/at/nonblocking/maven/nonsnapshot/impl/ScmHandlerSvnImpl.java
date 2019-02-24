@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,135 +44,129 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 @Component(role = ScmHandler.class, hint = "SVN")
 public class ScmHandlerSvnImpl implements ScmHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerSvnImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerSvnImpl.class);
 
-  private SVNClientManager svnClientManager = SVNClientManager.newInstance();
+    private SVNClientManager svnClientManager = SVNClientManager.newInstance();
 
-  public ScmHandlerSvnImpl() {
-  }
+    public ScmHandlerSvnImpl() {
+    }
 
-  @Override
-  public boolean isWorkingCopy(File path) {
-    return SVNWCUtil.isVersionedDirectory(toCanonicalPath(path));
-  }
+    @Override
+    public boolean isWorkingCopy(File path) {
+        return SVNWCUtil.isVersionedDirectory(toCanonicalPath(path));
+    }
 
-  @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, final long sinceRevision, final long workspaceRevision) {
-    final Boolean[] changes = new Boolean[1];
-    changes[0] = false;
+    @Override
+    public boolean checkChangesSinceRevision(final File moduleDirectory, final long sinceRevision, final long workspaceRevision) {
+        final Boolean[] changes = new Boolean[1];
+        changes[0] = false;
 
-    try {
-      this.svnClientManager.getLogClient().doLog(new File[] { moduleDirectory },
-          SVNRevision.WORKING,
-          SVNRevision.create(sinceRevision + 1),
-          SVNRevision.create(workspaceRevision),
-          false, false,
-          100L,
-          new ISVNLogEntryHandler() {
-            @Override
-            public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
-              if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
-                LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
-                    new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
-                changes[0] = true;
-              }
+        try {
+            this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+                    SVNRevision.WORKING,
+                    SVNRevision.create(sinceRevision + 1),
+                    SVNRevision.create(workspaceRevision),
+                    false, false,
+                    100L,
+                    svnLogEntry -> {
+                        if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+                            LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
+                                    moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage());
+                            changes[0] = true;
+                        }
+                    });
+
+        } catch (SVNException e) {
+            LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
+            return true;
+        }
+
+        return changes[0];
+    }
+
+    @Override
+    public boolean checkChangesSinceDate(final File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
+        final Boolean[] changes = new Boolean[1];
+        changes[0] = false;
+
+        try {
+            this.svnClientManager.getLogClient().doLog(new File[]{moduleDirectory},
+                    SVNRevision.WORKING,
+                    SVNRevision.create(sinceDate),
+                    SVNRevision.create(workspaceLastCommitDate),
+                    false, true,
+                    100L,
+                    svnLogEntry -> {
+                        if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+                            LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
+                                    moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage());
+                            changes[0] = true;
+                        }
+                    });
+
+        } catch (SVNException e) {
+            LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
+            return true;
+        }
+
+        return changes[0];
+    }
+
+    @Override
+    public Date getLastCommitDate(File path) {
+        try {
+            SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
+            return info.getCommittedDate();
+        } catch (SVNException e) {
+            throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
+        }
+    }
+
+    @Override
+    public long getCurrentRevisionId(File path) {
+        try {
+            SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
+            return info.getRevision().getNumber();
+        } catch (SVNException e) {
+            throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
+        }
+    }
+
+    @Override
+    public void commitFiles(List<File> files, String commitMessage) {
+        LOG.debug("Committing files: {}", files);
+
+        try {
+            SVNCommitInfo info = this.svnClientManager.getCommitClient().doCommit(files.toArray(new File[0]), false, commitMessage,
+                    null, null, false, false, SVNDepth.FILES);
+
+            if (info.getErrorMessage() != null) {
+                throw new NonSnapshotPluginException("Failed to commit files. Message: " + info.getErrorMessage().getMessage());
             }
-          });
 
-    } catch (SVNException e) {
-      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
-      return true;
+            LOG.debug("Files committed. New revision: {}", info.getNewRevision());
+
+        } catch (SVNException e) {
+            throw new NonSnapshotPluginException("Failed to commit files!", e);
+        }
     }
 
-    return changes[0];
-  }
+    @Override
+    public void init(File localRepoPath, String scmUser, String scmPassword, Properties properties) {
+        if (StringUtils.isEmpty(scmUser) || StringUtils.isEmpty(scmPassword)) {
+            throw new NonSnapshotPluginException("Parameters 'scmUser' and 'scmPassword' are required!");
+        }
 
-  @Override
-  public boolean checkChangesSinceDate(final File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
-    final Boolean[] changes = new Boolean[1];
-    changes[0] = false;
-
-    try {
-      this.svnClientManager.getLogClient().doLog(new File[] { moduleDirectory },
-          SVNRevision.WORKING,
-          SVNRevision.create(sinceDate),
-          SVNRevision.create(workspaceLastCommitDate),
-          false, true,
-          100L,
-          new ISVNLogEntryHandler() {
-            @Override
-            public void handleLogEntry(SVNLogEntry svnLogEntry) throws SVNException {
-              if (!svnLogEntry.getMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
-                LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
-                    new Object[]{ moduleDirectory.getAbsolutePath(), svnLogEntry.getRevision(), svnLogEntry.getDate(), svnLogEntry.getMessage() });
-                changes[0] = true;
-              }
-            }
-          });
-
-    } catch (SVNException e) {
-      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
-      return true;
+        ISVNAuthenticationManager authManager = new BasicAuthenticationManager(scmUser, scmPassword);
+        this.svnClientManager.setAuthenticationManager(authManager);
     }
 
-    return changes[0];
-  }
-
-  @Override
-  public Date getLastCommitDate(File path) {
-    try {
-      SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
-      return info.getCommittedDate();
-    } catch (SVNException e) {
-      throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
+    private File toCanonicalPath(File path) {
+        try {
+            return path.getCanonicalFile();
+        } catch (IOException e) {
+            throw new NonSnapshotPluginException(e.getMessage(), e);
+        }
     }
-  }
-
-  @Override
-  public long getCurrentRevisionId(File path) {
-    try {
-      SVNInfo info = this.svnClientManager.getWCClient().doInfo(path, null);
-      return info.getRevision().getNumber();
-    } catch (SVNException e) {
-      throw new NonSnapshotPluginException("Failed to obtain current revision number for path: " + path.getAbsolutePath(), e);
-    }
-  }
-
-  @Override
-  public void commitFiles(List<File> files, String commitMessage) {
-    LOG.debug("Committing files: {}", files);
-
-    try {
-      SVNCommitInfo info = this.svnClientManager.getCommitClient().doCommit(files.toArray(new File[files.size()]), false, commitMessage,
-          null, null, false, false, SVNDepth.FILES);
-
-      if (info.getErrorMessage() != null) {
-        throw new NonSnapshotPluginException("Failed to commit files. Message: " + info.getErrorMessage().getMessage());
-      }
-
-      LOG.debug("Files committed. New revision: {}", info.getNewRevision());
-
-    } catch (SVNException e) {
-      throw new NonSnapshotPluginException("Failed to commit files!", e);
-    }
-  }
-
-  @Override
-  public void init(File localRepoPath, String scmUser, String scmPassword, Properties properties) {
-    if (StringUtils.isEmpty(scmUser) || StringUtils.isEmpty(scmPassword)) {
-      throw new NonSnapshotPluginException("Parameters 'scmUser' and 'scmPassword' are required!");
-    }
-
-    ISVNAuthenticationManager authManager = new BasicAuthenticationManager(scmUser, scmPassword);
-    this.svnClientManager.setAuthenticationManager(authManager);
-  }
-
-  private File toCanonicalPath(File path) {
-    try {
-      return path.getCanonicalFile();
-    } catch (IOException e) {
-      throw new NonSnapshotPluginException(e.getMessage(), e);
-    }
-  }
 
 }

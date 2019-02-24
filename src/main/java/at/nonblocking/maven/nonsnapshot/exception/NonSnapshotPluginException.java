@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 package at.nonblocking.maven.nonsnapshot.exception;
 
 public class NonSnapshotPluginException extends RuntimeException {
-	
-	private static final long serialVersionUID = -4912008073348477665L;
 
-	public NonSnapshotPluginException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    private static final long serialVersionUID = -4912008073348477665L;
 
-	public NonSnapshotPluginException(String message) {
-		super(message);
-	}
+    public NonSnapshotPluginException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NonSnapshotPluginException(String message) {
+        super(message);
+    }
 
 }

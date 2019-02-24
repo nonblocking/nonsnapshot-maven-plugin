@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,58 +41,57 @@ import java.util.*;
 @Component(role = ModuleTraverser.class, hint = "default")
 public class ModuleTraverserDefaultImpl implements ModuleTraverser {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ModuleTraverserDefaultImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ModuleTraverserDefaultImpl.class);
 
-  @Override
-  public List<Model> findAllModules(MavenProject baseProject, List<Profile> activeProfiles) {
-    LOG.info("Scanning for Maven modules... Active profiles: {}", activeProfiles);
+    @Override
+    public List<Model> findAllModules(MavenProject baseProject, List<Profile> activeProfiles) {
+        LOG.info("Scanning for Maven modules... Active profiles: {}", activeProfiles);
 
-    List<Model> modelList = new ArrayList<>();
-    recursiveFindModules(baseProject.getBasedir(), modelList, activeProfiles);
-    return modelList;
-  }
-
-  private void recursiveFindModules(File baseDir, List<Model> modelList, List<Profile> activeProfiles) {
-    MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
-    File pom = new File(baseDir, "pom.xml");
-
-    Model model;
-
-    try (XmlStreamReader xmlStreamReader = ReaderFactory.newXmlReader(pom)) {
-      InputSource is = new InputSource();
-      model = reader.read(xmlStreamReader, false, is);
-      model.setPomFile(pom);
-      LOG.debug("Found maven module: {}", pom.getParentFile().getAbsolutePath());
-
-    } catch (IOException | XmlPullParserException e) {
-      throw new NonSnapshotPluginException("Failed to load POM: " + pom.getAbsolutePath(), e);
+        List<Model> modelList = new ArrayList<>();
+        recursiveFindModules(baseProject.getBasedir(), modelList, activeProfiles);
+        return modelList;
     }
 
-    modelList.add(model);
+    private void recursiveFindModules(File baseDir, List<Model> modelList, List<Profile> activeProfiles) {
+        MavenXpp3ReaderEx reader = new MavenXpp3ReaderEx();
+        File pom = new File(baseDir, "pom.xml");
 
-    Set<String> modulePaths = new LinkedHashSet<>();
-    modulePaths.addAll(model.getModules());
+        Model model;
 
-    if (activeProfiles != null) {
-      for (Profile activeProfile : activeProfiles) {
-        modulePaths.addAll(getProfileModules(model, activeProfile));
-      }
+        try (XmlStreamReader xmlStreamReader = ReaderFactory.newXmlReader(pom)) {
+            InputSource is = new InputSource();
+            model = reader.read(xmlStreamReader, false, is);
+            model.setPomFile(pom);
+            LOG.debug("Found maven module: {}", pom.getParentFile().getAbsolutePath());
+
+        } catch (IOException | XmlPullParserException e) {
+            throw new NonSnapshotPluginException("Failed to load POM: " + pom.getAbsolutePath(), e);
+        }
+
+        modelList.add(model);
+
+        Set<String> modulePaths = new LinkedHashSet<>(model.getModules());
+
+        if (activeProfiles != null) {
+            for (Profile activeProfile : activeProfiles) {
+                modulePaths.addAll(getProfileModules(model, activeProfile));
+            }
+        }
+
+        for (String modulePath : modulePaths) {
+            File moduleDir = new File(baseDir, modulePath);
+            recursiveFindModules(moduleDir, modelList, activeProfiles);
+        }
     }
 
-    for (String modulePath : modulePaths) {
-      File moduleDir = new File(baseDir, modulePath);
-      recursiveFindModules(moduleDir, modelList, activeProfiles);
-    }
-  }
+    private List<String> getProfileModules(Model model, Profile activeProfile) {
+        for (Profile profile : model.getProfiles()) {
+            if (profile.getId().equals(activeProfile.getId())) {
+                return profile.getModules();
+            }
+        }
 
-  private List<String> getProfileModules(Model model, Profile activeProfile) {
-    for (Profile profile : model.getProfiles()) {
-      if (profile.getId().equals(activeProfile.getId())) {
-        return profile.getModules();
-      }
+        return Collections.emptyList();
     }
-
-    return Collections.emptyList();
-  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,71 +27,71 @@ import java.util.Properties;
  */
 public interface ScmHandler {
 
-  String NONSNAPSHOT_COMMIT_MESSAGE_PREFIX = "Nonsnapshot Plugin:";
+    String NONSNAPSHOT_COMMIT_MESSAGE_PREFIX = "Nonsnapshot Plugin:";
 
-  /**
-   * Check if the project directory is a even a working copy
-   *
-   * @param moduleDirectory File
-   * @return boolean
-   */
-  boolean isWorkingCopy(File moduleDirectory);
-
-  /**
-   * Get the current revision id of this path.
-   * <br>
-   * Only supported by SVN. Other implementations may throw NotImplementedExceptions.
-   *
-   * @param path File
-   * @return String
-   */
-  long getCurrentRevisionId(File path);
-
-  /**
-   * Check if there has been changes since given revisionId
-   *
-   * @param moduleDirectory File
-   * @param sinceRevision long
-   * @param workspaceRevision long
-   * @return boolean
-   */
-  boolean checkChangesSinceRevision(File moduleDirectory, long sinceRevision, long workspaceRevision);
-
-  /**
-   * Get date of last commit within given path.
-   *
-   * @param path String
-   * @return Date
+    /**
+     * Check if the project directory is a even a working copy
+     *
+     * @param moduleDirectory File
+     * @return boolean
      */
-  Date getLastCommitDate(File path);
+    boolean isWorkingCopy(File moduleDirectory);
 
-  /**
-   * Check if there has been changes since given date
-   *
-   * @param moduleDirectory File
-   * @param sinceDate Date
-   * @param workspaceLastCommitDate Date
-   * @return boolean
-   */
-  boolean checkChangesSinceDate(File moduleDirectory, Date sinceDate, Date workspaceLastCommitDate);
+    /**
+     * Get the current revision id of this path.
+     * <br>
+     * Only supported by SVN. Other implementations may throw NotImplementedExceptions.
+     *
+     * @param path File
+     * @return String
+     */
+    long getCurrentRevisionId(File path);
+
+    /**
+     * Check if there has been changes since given revisionId
+     *
+     * @param moduleDirectory   File
+     * @param sinceRevision     long
+     * @param workspaceRevision long
+     * @return boolean
+     */
+    boolean checkChangesSinceRevision(File moduleDirectory, long sinceRevision, long workspaceRevision);
+
+    /**
+     * Get date of last commit within given path.
+     *
+     * @param path String
+     * @return Date
+     */
+    Date getLastCommitDate(File path);
+
+    /**
+     * Check if there has been changes since given date
+     *
+     * @param moduleDirectory         File
+     * @param sinceDate               Date
+     * @param workspaceLastCommitDate Date
+     * @return boolean
+     */
+    boolean checkChangesSinceDate(File moduleDirectory, Date sinceDate, Date workspaceLastCommitDate);
 
 
-  /**
-   * Commit the given path to the remote repository.
-   *
-   * @param files         List&lt;File&gt;
-   * @param commitMessage String
-   */
-  void commitFiles(List<File> files, String commitMessage);
+    /**
+     * Commit the given path to the remote repository.
+     *
+     * @param files         List&lt;File&gt;
+     * @param commitMessage String
+     */
+    void commitFiles(List<File> files, String commitMessage);
 
-  /**
-   * Set the repository credentials
-   *
-   * @param baseDir File
-   * @param scmUser     String
-   * @param scmPassword String
-   * @param properties Properties
-   */
-  void init(File baseDir, String scmUser, String scmPassword, Properties properties);
+    /**
+     * Set the repository credentials
+     *
+     * @param baseDir     File
+     * @param scmUser     String
+     * @param scmPassword String
+     * @param properties  Properties
+     */
+    void init(File baseDir, String scmUser, String scmPassword, Properties properties);
 
 }

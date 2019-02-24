@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
     private static Logger LOG = LoggerFactory.getLogger(NonSnapshotUpdateVersionsMojo.class);
 
-    private static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final Date NOW = new Date();
 
     @Override
     protected void internalExecute() {
@@ -141,7 +142,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
 
                 if (qualifierString == null) {
                     LOG.info("Invalid qualifier string found for artifact {}:{}: {}. Assigning a new version.",
-                            new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), mavenModule.getVersion()});
+                            mavenModule.getGroupId(), mavenModule.getArtifactId(), mavenModule.getVersion());
                     mavenModule.setDirty(true);
 
                 } else if (qualifierString.equals("SNAPSHOT")) {
@@ -164,9 +165,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                         }
 
                     } else {
-
                         //Default: compare timestamps
-
                         try {
                             DateFormat dateFormat = new SimpleDateFormat(getTimestampQualifierPattern());
                             Date dateFromQualifier = dateFormat.parse(qualifierString);
@@ -177,7 +176,7 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                             }
                         } catch (ParseException e) {
                             LOG.debug("Module {}:{}: Invalid timestamp qualifier: {}",
-                                    new Object[]{mavenModule.getGroupId(), mavenModule.getArtifactId(), qualifierString});
+                                    mavenModule.getGroupId(), mavenModule.getArtifactId(), qualifierString);
                             mavenModule.setDirty(true);
                         }
                     }
@@ -215,13 +214,13 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 try {
                     String latestVersion = getUpstreamDependencyHandler().resolveLatestVersion(upstreamArtifact, upstreamDependency, getRepositorySystem(), getRepositorySystemSession(), getRemoteRepositories());
                     if (latestVersion != null) {
-                        LOG.info("Found newer version for upstream dependency {}:{}: {}", new Object[]{upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), latestVersion});
+                        LOG.info("Found newer version for upstream dependency {}:{}: {}", upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), latestVersion);
                         return new UpdatedUpstreamMavenArtifact(upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), upstreamArtifact.getVersion(), latestVersion);
                     }
                 } catch (NonSnapshotDependencyResolverException e) {
                     if (isDontFailOnUpstreamVersionResolution()) {
                         LOG.warn("Upstream dependency resolution failed (cannot update {}:{}). Error: {}",
-                                new Object[]{upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), e.getMessage()});
+                                upstreamArtifact.getGroupId(), upstreamArtifact.getArtifactId(), e.getMessage());
                     } else {
                         throw e;
                     }
@@ -243,7 +242,8 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 if (isUseSvnRevisionQualifier()) {
                     mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getCurrentRevisionId(modulesPath));
                 } else {
-                    mavenModule.setNewVersion(getBaseVersion() + "-" + new SimpleDateFormat(getTimestampQualifierPattern()).format(getScmHandler().getLastCommitDate(modulesPath)));
+                    // Use build time as version suffix
+                    mavenModule.setNewVersion(getBaseVersion() + "-" + new SimpleDateFormat(getTimestampQualifierPattern()).format(NOW));
                 }
             }
         }
@@ -283,7 +283,6 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 writer.write("IF DEFINED M2_HOME (set MVN_EXEC=%M2_HOME%\\bin\\mvn.bat)\n");
                 writer.write("ECHO Using maven executable: %MVN_EXEC%\n");
                 writer.write("%MVN_EXEC% --projects " + projectPaths + " %*");
-                writer.close();
 
             } catch (IOException e) {
                 LOG.error("Failed to write windows batch script for incremental build!", e);
@@ -328,7 +327,6 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
             writer.write("#Can be used together with the Jenkins EnvInject plugin to build changed projects only:\n");
             writer.write("#mvn --projects ${nonsnapshot.changed.projects} install\n");
             writer.write("nonsnapshot.changed.projects=" + projectPaths + "\n");
-            writer.close();
 
         } catch (IOException e) {
             LOG.error("Failed to write changed projects property file!", e);

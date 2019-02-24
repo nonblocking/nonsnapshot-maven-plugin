@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -48,358 +46,358 @@ import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
  */
 abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualizable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NonSnapshotBaseMojo.class);
-  private static final String DEFAULT_TIMESTAMP_QUALIFIER_PATTERN = "yyyyMMddHHmm";
+    private static final Logger LOG = LoggerFactory.getLogger(NonSnapshotBaseMojo.class);
+    private static final String DEFAULT_TIMESTAMP_QUALIFIER_PATTERN = "yyyyMMddHHmm";
 
-  protected static final String DIRTY_MODULES_REGISTRY_FILE = "nonSnapshotDirtyModules.txt";
+    protected static final String DIRTY_MODULES_REGISTRY_FILE = "nonSnapshotDirtyModules.txt";
 
-  /**
-   * The SCM (Source Code Management System) type
-   */
-  @Parameter(defaultValue = "SVN")
-  private SCM_TYPE scmType;
+    /**
+     * The SCM (Source Code Management System) type
+     */
+    @Parameter(defaultValue = "SVN")
+    private SCM_TYPE scmType;
 
-  /**
-   * SCM Username
-   */
-  @Parameter
-  private String scmUser;
+    /**
+     * SCM Username
+     */
+    @Parameter
+    private String scmUser;
 
-  /**
-   * SCM Password
-   */
-  @Parameter
-  private String scmPassword;
+    /**
+     * SCM Password
+     */
+    @Parameter
+    private String scmPassword;
 
-  @Parameter(defaultValue = "true")
-  private boolean gitDoPush;
+    @Parameter(defaultValue = "true")
+    private boolean gitDoPush;
 
-  /**
-   * Defer the actual commit until nonsnapshot:commit is called.
-   */
-  @Parameter(defaultValue = "false")
-  private boolean deferPomCommit;
+    /**
+     * Defer the actual commit until nonsnapshot:commit is called.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean deferPomCommit;
 
-  @Parameter(defaultValue = "false")
-  private boolean dontFailOnUpstreamVersionResolution;
+    @Parameter(defaultValue = "false")
+    private boolean dontFailOnUpstreamVersionResolution;
 
-  /**
-   * Don't let the build fail if the commit of the POM files fails.
-   * <br/>
-   * Useful if you run this plugin on a CI Server and don't want to let the build fail when
-   * a concurrent POM update occurred.
-   */
-  @Parameter(defaultValue = "false")
-  private boolean dontFailOnCommit;
+    /**
+     * Don't let the build fail if the commit of the POM files fails.
+     * <br/>
+     * Useful if you run this plugin on a CI Server and don't want to let the build fail when
+     * a concurrent POM update occurred.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean dontFailOnCommit;
 
-  @Parameter(defaultValue = "${project}")
-  private MavenProject mavenProject;
+    @Parameter(defaultValue = "${project}")
+    private MavenProject mavenProject;
 
-  @Parameter(required = true)
-  private String baseVersion;
+    @Parameter(required = true)
+    private String baseVersion;
 
-  @Parameter(defaultValue = "false")
-  private boolean useSvnRevisionQualifier;
+    @Parameter(defaultValue = "false")
+    private boolean useSvnRevisionQualifier;
 
-  @Parameter(defaultValue = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN)
-  private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
+    @Parameter(defaultValue = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN)
+    private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
 
-  @Parameter
-  private List<String> upstreamDependencies;
+    @Parameter
+    private List<String> upstreamDependencies;
 
-  /**
-   * Generate a shell script to incrementally build only dirty artifacts (Maven > 3.2.1 only)
-   */
-  @Parameter(defaultValue = "false")
-  private boolean generateIncrementalBuildScripts;
+    /**
+     * Generate a shell script to incrementally build only dirty artifacts (Maven > 3.2.1 only)
+     */
+    @Parameter(defaultValue = "false")
+    private boolean generateIncrementalBuildScripts;
 
-  /**
-   * Generate a property file with a property for all changed projects,
-   * which can be used in jenkins for an incremental build (mvn --project ${NONSNAPSHOT_CHANGED_PROJECTS}).
-   */
-  @Parameter(defaultValue = "false")
-  private boolean generateChangedProjectsPropertyFile;
+    /**
+     * Generate a property file with a property for all changed projects,
+     * which can be used in jenkins for an incremental build (mvn --project ${NONSNAPSHOT_CHANGED_PROJECTS}).
+     */
+    @Parameter(defaultValue = "false")
+    private boolean generateChangedProjectsPropertyFile;
 
-  /**
-   * Disable this plugin
-   */
-  @Parameter(defaultValue = "false")
-  private boolean skip;
+    /**
+     * Disable this plugin
+     */
+    @Parameter(defaultValue = "false")
+    private boolean skip;
 
-  @Component(role = MavenPomHandler.class, hint = "default")
-  private MavenPomHandler mavenPomHandler;
+    @Component(role = MavenPomHandler.class, hint = "default")
+    private MavenPomHandler mavenPomHandler;
 
-  @Component(role = ModuleTraverser.class, hint = "default")
-  private ModuleTraverser moduleTraverser;
+    @Component(role = ModuleTraverser.class, hint = "default")
+    private ModuleTraverser moduleTraverser;
 
-  @Component(role = DependencyTreeProcessor.class, hint = "default")
-  private DependencyTreeProcessor dependencyTreeProcessor;
+    @Component(role = DependencyTreeProcessor.class, hint = "default")
+    private DependencyTreeProcessor dependencyTreeProcessor;
 
-  @Component(role = UpstreamDependencyHandler.class, hint = "default")
-  private UpstreamDependencyHandler upstreamDependencyHandler;
+    @Component(role = UpstreamDependencyHandler.class, hint = "default")
+    private UpstreamDependencyHandler upstreamDependencyHandler;
 
-  @Component
-  private RepositorySystem repositorySystem;
+    @Component
+    private RepositorySystem repositorySystem;
 
-  @Parameter(defaultValue = "${repositorySystemSession}")
-  private RepositorySystemSession repositorySystemSession;
+    @Parameter(defaultValue = "${repositorySystemSession}")
+    private RepositorySystemSession repositorySystemSession;
 
-  @Parameter(defaultValue = "${project.remoteProjectRepositories}")
-  private List<RemoteRepository> remoteRepositories;
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}")
+    private List<RemoteRepository> remoteRepositories;
 
-  private List<ProcessedUpstreamDependency> processedUpstreamDependencies;
+    private List<ProcessedUpstreamDependency> processedUpstreamDependencies;
 
-  private ScmHandler scmHandler;
+    private ScmHandler scmHandler;
 
-  private PlexusContainer plexusContainer;
+    private PlexusContainer plexusContainer;
 
-  public void execute() throws MojoExecutionException, MojoFailureException {
-    if (this.skip) {
-      LOG.info("NonSnapshot Plugin has been disabled for this project.");
-      return;
+    public void execute() {
+        if (this.skip) {
+            LOG.info("NonSnapshot Plugin has been disabled for this project.");
+            return;
+        }
+
+        LOG.info("Executing NonSnapshot Plugin for project path: {}", this.mavenProject.getBasedir().getAbsolutePath());
+
+        postProcessParameters();
+
+        internalExecute();
     }
 
-    LOG.info("Executing NonSnapshot Plugin for project path: {}", this.mavenProject.getBasedir().getAbsolutePath());
+    protected abstract void internalExecute();
 
-    postProcessParameters();
+    private void postProcessParameters() {
+        if (this.scmHandler == null) {
+            LOG.debug("Lookup for ScmHandler implementation of type: {}", this.scmType);
 
-    internalExecute();
-  }
+            try {
+                this.scmHandler = this.plexusContainer.lookup(ScmHandler.class, this.scmType.name());
+            } catch (ComponentLookupException e) {
+                throw new NonSnapshotPluginException("Unable to instantiate ScmHandler class for type: " + this.scmType, e);
+            }
 
-  protected abstract void internalExecute();
+            if (this.scmHandler == null) {
+                throw new NonSnapshotPluginException("Unable to instantiate ScmHandler class for type: " + this.scmType);
+            }
 
-  private void postProcessParameters() {
-    if (this.scmHandler == null) {
-      LOG.debug("Lookup for ScmHandler implementation of type: {}", this.scmType);
+            LOG.debug("Found ScmHandler: {}", this.scmHandler.getClass());
+        }
 
-      try {
-        this.scmHandler = this.plexusContainer.lookup(ScmHandler.class, this.scmType.name());
-      } catch (ComponentLookupException e) {
-        throw new NonSnapshotPluginException("Unable to instantiate ScmHandler class for type: " + this.scmType, e);
-      }
+        Properties properties = new Properties();
+        properties.setProperty("gitDoPush", String.valueOf(this.gitDoPush));
 
-      if (this.scmHandler == null) {
-        throw new NonSnapshotPluginException("Unable to instantiate ScmHandler class for type: " + this.scmType);
-      }
+        this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword, properties);
 
-      LOG.debug("Found ScmHandler: {}", this.scmHandler.getClass());
+        this.processedUpstreamDependencies = this.upstreamDependencyHandler.processDependencyList(getUpstreamDependencies());
     }
 
-    Properties properties = new Properties();
-    properties.setProperty("gitDoPush", String.valueOf(this.gitDoPush));
+    protected File getDirtyModulesRegistryFile() {
+        return new File(this.mavenProject.getBasedir(), DIRTY_MODULES_REGISTRY_FILE);
+    }
 
-    this.scmHandler.init(getMavenProject().getBasedir(), this.scmUser, this.scmPassword, properties);
+    @Override
+    public void contextualize(Context context) throws ContextException {
+        this.plexusContainer = (PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY);
+    }
 
-    this.processedUpstreamDependencies = this.upstreamDependencyHandler.processDependencyList(getUpstreamDependencies());
-  }
+    public SCM_TYPE getScmType() {
+        return scmType;
+    }
 
-  protected File getDirtyModulesRegistryFile() {
-    return new File(this.mavenProject.getBasedir(), DIRTY_MODULES_REGISTRY_FILE);
-  }
+    public void setScmType(SCM_TYPE scmType) {
+        this.scmType = scmType;
+    }
 
-  @Override
-  public void contextualize(Context context) throws ContextException {
-    this.plexusContainer = (PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY);
-  }
+    public String getScmUser() {
+        return scmUser;
+    }
 
-  public SCM_TYPE getScmType() {
-    return scmType;
-  }
+    public void setScmUser(String scmUser) {
+        this.scmUser = scmUser;
+    }
 
-  public void setScmType(SCM_TYPE scmType) {
-    this.scmType = scmType;
-  }
+    public String getScmPassword() {
+        return scmPassword;
+    }
 
-  public String getScmUser() {
-    return scmUser;
-  }
+    public void setScmPassword(String scmPassword) {
+        this.scmPassword = scmPassword;
+    }
 
-  public void setScmUser(String scmUser) {
-    this.scmUser = scmUser;
-  }
+    public boolean isGitDoPush() {
+        return gitDoPush;
+    }
 
-  public String getScmPassword() {
-    return scmPassword;
-  }
+    public void setGitDoPush(boolean gitDoPush) {
+        this.gitDoPush = gitDoPush;
+    }
 
-  public void setScmPassword(String scmPassword) {
-    this.scmPassword = scmPassword;
-  }
+    public boolean isDeferPomCommit() {
+        return deferPomCommit;
+    }
 
-  public boolean isGitDoPush() {
-    return gitDoPush;
-  }
+    public void setDeferPomCommit(boolean deferPomCommit) {
+        this.deferPomCommit = deferPomCommit;
+    }
 
-  public void setGitDoPush(boolean gitDoPush) {
-    this.gitDoPush = gitDoPush;
-  }
+    public boolean isDontFailOnUpstreamVersionResolution() {
+        return dontFailOnUpstreamVersionResolution;
+    }
 
-  public boolean isDeferPomCommit() {
-    return deferPomCommit;
-  }
+    public void setDontFailOnUpstreamVersionResolution(boolean dontFailOnUpstreamVersionResolution) {
+        this.dontFailOnUpstreamVersionResolution = dontFailOnUpstreamVersionResolution;
+    }
 
-  public void setDeferPomCommit(boolean deferPomCommit) {
-    this.deferPomCommit = deferPomCommit;
-  }
+    public boolean isDontFailOnCommit() {
+        return dontFailOnCommit;
+    }
 
-  public boolean isDontFailOnUpstreamVersionResolution() {
-    return dontFailOnUpstreamVersionResolution;
-  }
+    public void setDontFailOnCommit(boolean dontFailOnCommit) {
+        this.dontFailOnCommit = dontFailOnCommit;
+    }
 
-  public void setDontFailOnUpstreamVersionResolution(boolean dontFailOnUpstreamVersionResolution) {
-    this.dontFailOnUpstreamVersionResolution = dontFailOnUpstreamVersionResolution;
-  }
+    public MavenProject getMavenProject() {
+        return mavenProject;
+    }
 
-  public boolean isDontFailOnCommit() {
-    return dontFailOnCommit;
-  }
+    public void setMavenProject(MavenProject mavenProject) {
+        this.mavenProject = mavenProject;
+    }
 
-  public void setDontFailOnCommit(boolean dontFailOnCommit) {
-    this.dontFailOnCommit = dontFailOnCommit;
-  }
+    public String getBaseVersion() {
+        return baseVersion;
+    }
 
-  public MavenProject getMavenProject() {
-    return mavenProject;
-  }
+    public void setBaseVersion(String baseVersion) {
+        this.baseVersion = baseVersion;
+    }
 
-  public void setMavenProject(MavenProject mavenProject) {
-    this.mavenProject = mavenProject;
-  }
+    public boolean isUseSvnRevisionQualifier() {
+        return useSvnRevisionQualifier;
+    }
 
-  public String getBaseVersion() {
-    return baseVersion;
-  }
+    public void setUseSvnRevisionQualifier(boolean useSvnRevisionQualifier) {
+        this.useSvnRevisionQualifier = useSvnRevisionQualifier;
+    }
 
-  public void setBaseVersion(String baseVersion) {
-    this.baseVersion = baseVersion;
-  }
+    public String getTimestampQualifierPattern() {
+        return timestampQualifierPattern;
+    }
 
-  public boolean isUseSvnRevisionQualifier() {
-    return useSvnRevisionQualifier;
-  }
+    public void setTimestampQualifierPattern(String timestampQualifierPattern) {
+        this.timestampQualifierPattern = timestampQualifierPattern;
+    }
 
-  public void setUseSvnRevisionQualifier(boolean useSvnRevisionQualifier) {
-    this.useSvnRevisionQualifier = useSvnRevisionQualifier;
-  }
+    public List<String> getUpstreamDependencies() {
+        return upstreamDependencies;
+    }
 
-  public String getTimestampQualifierPattern() {
-    return timestampQualifierPattern;
-  }
+    public void setUpstreamDependencies(List<String> upstreamDependencies) {
+        this.upstreamDependencies = upstreamDependencies;
+    }
 
-  public void setTimestampQualifierPattern(String timestampQualifierPattern) {
-    this.timestampQualifierPattern = timestampQualifierPattern;
-  }
+    public boolean isGenerateIncrementalBuildScripts() {
+        return generateIncrementalBuildScripts;
+    }
 
-  public List<String> getUpstreamDependencies() {
-    return upstreamDependencies;
-  }
+    public void setGenerateIncrementalBuildScripts(boolean generateIncrementalBuildScripts) {
+        this.generateIncrementalBuildScripts = generateIncrementalBuildScripts;
+    }
 
-  public void setUpstreamDependencies(List<String> upstreamDependencies) {
-    this.upstreamDependencies = upstreamDependencies;
-  }
+    public boolean isGenerateChangedProjectsPropertyFile() {
+        return generateChangedProjectsPropertyFile;
+    }
 
-  public boolean isGenerateIncrementalBuildScripts() {
-    return generateIncrementalBuildScripts;
-  }
+    public void setGenerateChangedProjectsPropertyFile(boolean generateChangedProjectsPropertyFile) {
+        this.generateChangedProjectsPropertyFile = generateChangedProjectsPropertyFile;
+    }
 
-  public void setGenerateIncrementalBuildScripts(boolean generateIncrementalBuildScripts) {
-    this.generateIncrementalBuildScripts = generateIncrementalBuildScripts;
-  }
+    public boolean isSkip() {
+        return skip;
+    }
 
-  public boolean isGenerateChangedProjectsPropertyFile() {
-    return generateChangedProjectsPropertyFile;
-  }
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
 
-  public void setGenerateChangedProjectsPropertyFile(boolean generateChangedProjectsPropertyFile) {
-    this.generateChangedProjectsPropertyFile = generateChangedProjectsPropertyFile;
-  }
+    public MavenPomHandler getMavenPomHandler() {
+        return mavenPomHandler;
+    }
 
-  public boolean isSkip() {
-    return skip;
-  }
+    public void setMavenPomHandler(MavenPomHandler mavenPomHandler) {
+        this.mavenPomHandler = mavenPomHandler;
+    }
 
-  public void setSkip(boolean skip) {
-    this.skip = skip;
-  }
+    public ModuleTraverser getModuleTraverser() {
+        return moduleTraverser;
+    }
 
-  public MavenPomHandler getMavenPomHandler() {
-    return mavenPomHandler;
-  }
+    public void setModuleTraverser(ModuleTraverser moduleTraverser) {
+        this.moduleTraverser = moduleTraverser;
+    }
 
-  public void setMavenPomHandler(MavenPomHandler mavenPomHandler) {
-    this.mavenPomHandler = mavenPomHandler;
-  }
+    public DependencyTreeProcessor getDependencyTreeProcessor() {
+        return dependencyTreeProcessor;
+    }
 
-  public ModuleTraverser getModuleTraverser() {
-    return moduleTraverser;
-  }
+    public void setDependencyTreeProcessor(DependencyTreeProcessor dependencyTreeProcessor) {
+        this.dependencyTreeProcessor = dependencyTreeProcessor;
+    }
 
-  public void setModuleTraverser(ModuleTraverser moduleTraverser) {
-    this.moduleTraverser = moduleTraverser;
-  }
+    public UpstreamDependencyHandler getUpstreamDependencyHandler() {
+        return upstreamDependencyHandler;
+    }
 
-  public DependencyTreeProcessor getDependencyTreeProcessor() {
-    return dependencyTreeProcessor;
-  }
+    public void setUpstreamDependencyHandler(UpstreamDependencyHandler upstreamDependencyHandler) {
+        this.upstreamDependencyHandler = upstreamDependencyHandler;
+    }
 
-  public void setDependencyTreeProcessor(DependencyTreeProcessor dependencyTreeProcessor) {
-    this.dependencyTreeProcessor = dependencyTreeProcessor;
-  }
+    public RepositorySystem getRepositorySystem() {
+        return repositorySystem;
+    }
 
-  public UpstreamDependencyHandler getUpstreamDependencyHandler() {
-    return upstreamDependencyHandler;
-  }
+    public void setRepositorySystem(RepositorySystem repositorySystem) {
+        this.repositorySystem = repositorySystem;
+    }
 
-  public void setUpstreamDependencyHandler(UpstreamDependencyHandler upstreamDependencyHandler) {
-    this.upstreamDependencyHandler = upstreamDependencyHandler;
-  }
+    public RepositorySystemSession getRepositorySystemSession() {
+        return repositorySystemSession;
+    }
 
-  public RepositorySystem getRepositorySystem() {
-    return repositorySystem;
-  }
+    public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
+        this.repositorySystemSession = repositorySystemSession;
+    }
 
-  public void setRepositorySystem(RepositorySystem repositorySystem) {
-    this.repositorySystem = repositorySystem;
-  }
+    public List<RemoteRepository> getRemoteRepositories() {
+        return remoteRepositories;
+    }
 
-  public RepositorySystemSession getRepositorySystemSession() {
-    return repositorySystemSession;
-  }
+    public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
+        this.remoteRepositories = remoteRepositories;
+    }
 
-  public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
-    this.repositorySystemSession = repositorySystemSession;
-  }
+    public List<ProcessedUpstreamDependency> getProcessedUpstreamDependencies() {
+        return processedUpstreamDependencies;
+    }
 
-  public List<RemoteRepository> getRemoteRepositories() {
-    return remoteRepositories;
-  }
+    public void setProcessedUpstreamDependencies(List<ProcessedUpstreamDependency> processedUpstreamDependencies) {
+        this.processedUpstreamDependencies = processedUpstreamDependencies;
+    }
 
-  public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
-    this.remoteRepositories = remoteRepositories;
-  }
+    public ScmHandler getScmHandler() {
+        return scmHandler;
+    }
 
-  public List<ProcessedUpstreamDependency> getProcessedUpstreamDependencies() {
-    return processedUpstreamDependencies;
-  }
+    public void setScmHandler(ScmHandler scmHandler) {
+        this.scmHandler = scmHandler;
+    }
 
-  public void setProcessedUpstreamDependencies(List<ProcessedUpstreamDependency> processedUpstreamDependencies) {
-    this.processedUpstreamDependencies = processedUpstreamDependencies;
-  }
+    public PlexusContainer getPlexusContainer() {
+        return plexusContainer;
+    }
 
-  public ScmHandler getScmHandler() {
-    return scmHandler;
-  }
-
-  public void setScmHandler(ScmHandler scmHandler) {
-    this.scmHandler = scmHandler;
-  }
-
-  public PlexusContainer getPlexusContainer() {
-    return plexusContainer;
-  }
-
-  public void setPlexusContainer(PlexusContainer plexusContainer) {
-    this.plexusContainer = plexusContainer;
-  }
+    public void setPlexusContainer(PlexusContainer plexusContainer) {
+        this.plexusContainer = plexusContainer;
+    }
 }
 

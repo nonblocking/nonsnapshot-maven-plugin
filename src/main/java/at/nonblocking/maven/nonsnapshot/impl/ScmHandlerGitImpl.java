@@ -43,210 +43,210 @@ import java.util.Properties;
 @Component(role = ScmHandler.class, hint = "GIT")
 public class ScmHandlerGitImpl implements ScmHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerGitImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScmHandlerGitImpl.class);
 
-  private File baseDir;
-  private Git git;
-  private CredentialsProvider credentialsProvider;
-  private boolean doPush = true;
+    private File baseDir;
+    private Git git;
+    private CredentialsProvider credentialsProvider;
+    private boolean doPush = true;
 
-  static {
-    SshSessionFactory.setInstance(new JschConfigSessionFactory() {
-      @Override
-      protected void configure(OpenSshConfig.Host hc, Session session) {
-        session.setConfig("StrictHostKeyChecking", "no");
-      }
-    });
-  }
-
-  @Override
-  public boolean isWorkingCopy(File path) {
-    return this.git != null;
-  }
-
-  @Override
-  public Date getLastCommitDate(File path) {
-
-    try {
-      LogCommand logCommand = this.git
-              .log()
-              .setMaxCount(100);
-
-      String modulePath = PathUtil.relativePath(this.baseDir, path);
-      if (!modulePath.isEmpty()) {
-        logCommand.addPath(modulePath);
-      }
-
-      RevCommit lastCommit = logCommand.call().iterator().next();
-      return new Date(lastCommit.getCommitTime() * 1000L);
-
-    } catch (Exception e) {
-      throw new NonSnapshotPluginException("Failed to determine last commit date!", e);
-    }
-  }
-
-  @Override
-  public boolean checkChangesSinceRevision(final File moduleDirectory, long sinceRevision, long workspaceRevision) {
-    throw new RuntimeException("Operation checkChangesSinceRevision() not supported by the GIT handler");
-  }
-
-  @Override
-  public boolean checkChangesSinceDate(File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
-    if (this.git == null) {
-      return false;
+    static {
+        SshSessionFactory.setInstance(new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host hc, Session session) {
+                session.setConfig("StrictHostKeyChecking", "no");
+            }
+        });
     }
 
-    try {
-      String modulePath = PathUtil.relativePath(this.baseDir, moduleDirectory);
+    @Override
+    public boolean isWorkingCopy(File path) {
+        return this.git != null;
+    }
 
-      LogCommand logCommand = this.git
-          .log()
-          .setMaxCount(100);
+    @Override
+    public Date getLastCommitDate(File path) {
 
-      if (!modulePath.isEmpty()) {
-        logCommand.addPath(modulePath);
-      }
+        try {
+            LogCommand logCommand = this.git
+                    .log()
+                    .setMaxCount(100);
 
-      for (RevCommit commit : logCommand.call()) {
-        Date commitTime = new Date(commit.getCommitTime() * 1000L);
-        if (commitTime.after(sinceDate)) {
-          if (!commit.getFullMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
-            LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
-                new Object[]{moduleDirectory.getAbsolutePath(), commit.getId(), commitTime, commit.getFullMessage()});
+            String modulePath = PathUtil.relativePath(this.baseDir, path);
+            if (!modulePath.isEmpty()) {
+                logCommand.addPath(modulePath);
+            }
+
+            RevCommit lastCommit = logCommand.call().iterator().next();
+            return new Date(lastCommit.getCommitTime() * 1000L);
+
+        } catch (Exception e) {
+            throw new NonSnapshotPluginException("Failed to determine last commit date!", e);
+        }
+    }
+
+    @Override
+    public boolean checkChangesSinceRevision(final File moduleDirectory, long sinceRevision, long workspaceRevision) {
+        throw new RuntimeException("Operation checkChangesSinceRevision() not supported by the GIT handler");
+    }
+
+    @Override
+    public boolean checkChangesSinceDate(File moduleDirectory, final Date sinceDate, final Date workspaceLastCommitDate) {
+        if (this.git == null) {
+            return false;
+        }
+
+        try {
+            String modulePath = PathUtil.relativePath(this.baseDir, moduleDirectory);
+
+            LogCommand logCommand = this.git
+                    .log()
+                    .setMaxCount(100);
+
+            if (!modulePath.isEmpty()) {
+                logCommand.addPath(modulePath);
+            }
+
+            for (RevCommit commit : logCommand.call()) {
+                Date commitTime = new Date(commit.getCommitTime() * 1000L);
+                if (commitTime.after(sinceDate)) {
+                    if (!commit.getFullMessage().startsWith(NONSNAPSHOT_COMMIT_MESSAGE_PREFIX)) {
+                        LOG.debug("Module folder {}: Change since last commit: rev{} @ {} ({})",
+                                moduleDirectory.getAbsolutePath(), commit.getId(), commitTime, commit.getFullMessage());
+                        return true;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
             return true;
-          }
-        } else {
-          break;
         }
-      }
 
-    } catch (Exception e) {
-      LOG.warn("Failed to check changes for path: {}" + moduleDirectory.getAbsolutePath(), e);
-      return true;
-    }
-
-    return false;
-  }
-
-  @Override
-  public long getCurrentRevisionId(File path) {
-    throw new RuntimeException("Operation getCurrentRevisionId() not supported by the GIT handler");
-  }
-
-  @Override
-  public void commitFiles(List<File> files, String commitMessage) {
-    LOG.debug("Committing files: {}", files);
-
-    try {
-      for (File file : files) {
-        String filePath = PathUtil.relativePath(this.baseDir, file);
-
-        LOG.debug("Git: Adding file: {}", filePath);
-        this.git
-            .add()
-            .addFilepattern(filePath)
-            .call();
-      }
-
-      LOG.debug("Git: Committing changes");
-      this.git
-          .commit()
-          .setMessage(commitMessage)
-          .call();
-
-      if (this.doPush) {
-        LOG.debug("Git: Pushing changes");
-        this.git
-            .push()
-            .setCredentialsProvider(this.credentialsProvider)
-            .call();
-      }
-
-    } catch (Exception e) {
-      throw new NonSnapshotPluginException("Failed to commit files!", e);
-    }
-  }
-
-
-  @Override
-  public void init(File baseDir, String scmUser, String scmPassword, Properties properties) {
-    this.baseDir = findGitRepo(baseDir);
-    if (this.baseDir == null) {
-      LOG.error("Project seems not be within a GIT repository!");
-      return;
-    }
-
-    LOG.info("Using GIT repository: {}", this.baseDir.getAbsolutePath());
-
-    try {
-      FileRepository localRepo = new FileRepository(this.baseDir + "/.git");
-      this.git = new Git(localRepo);
-      if (scmPassword != null && !scmPassword.trim().isEmpty()) {
-        this.credentialsProvider = new UsernamePasswordAndPassphraseCredentialProvider(scmUser, scmPassword);
-      }
-      if (properties != null && "false".equals(properties.getProperty("gitDoPush"))) {
-        this.doPush = false;
-        LOG.info("GIT push is disabled");
-      }
-
-    } catch (Exception e) {
-      LOG.error("Project seems not be within a GIT repository!", e);
-    }
-  }
-
-  private File findGitRepo(File baseDir) {
-    File dir = baseDir;
-    do {
-      if (new File(dir, ".git").exists()) {
-        return dir;
-      }
-      dir = dir.getParentFile();
-    } while (dir != null);
-
-    return null;
-  }
-
-  private static class UsernamePasswordAndPassphraseCredentialProvider extends CredentialsProvider {
-
-    private String username;
-    private String password;
-
-    private UsernamePasswordAndPassphraseCredentialProvider(String username, String password) {
-      this.username = username;
-      this.password = password;
+        return false;
     }
 
     @Override
-    public boolean isInteractive() {
-      return false;
+    public long getCurrentRevisionId(File path) {
+        throw new RuntimeException("Operation getCurrentRevisionId() not supported by the GIT handler");
     }
 
     @Override
-    public boolean supports(CredentialItem... items) {
-      return true;
+    public void commitFiles(List<File> files, String commitMessage) {
+        LOG.debug("Committing files: {}", files);
+
+        try {
+            for (File file : files) {
+                String filePath = PathUtil.relativePath(this.baseDir, file);
+
+                LOG.debug("Git: Adding file: {}", filePath);
+                this.git
+                        .add()
+                        .addFilepattern(filePath)
+                        .call();
+            }
+
+            LOG.debug("Git: Committing changes");
+            this.git
+                    .commit()
+                    .setMessage(commitMessage)
+                    .call();
+
+            if (this.doPush) {
+                LOG.debug("Git: Pushing changes");
+                this.git
+                        .push()
+                        .setCredentialsProvider(this.credentialsProvider)
+                        .call();
+            }
+
+        } catch (Exception e) {
+            throw new NonSnapshotPluginException("Failed to commit files!", e);
+        }
     }
 
+
     @Override
-    public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
-      for (CredentialItem i : items) {
-        if (i instanceof CredentialItem.Username) {
-          ((CredentialItem.Username) i).setValue(username);
-          continue;
+    public void init(File baseDir, String scmUser, String scmPassword, Properties properties) {
+        this.baseDir = findGitRepo(baseDir);
+        if (this.baseDir == null) {
+            LOG.error("Project seems not be within a GIT repository!");
+            return;
         }
-        if (i instanceof CredentialItem.Password) {
-          ((CredentialItem.Password) i).setValue(this.password.toCharArray());
-          continue;
+
+        LOG.info("Using GIT repository: {}", this.baseDir.getAbsolutePath());
+
+        try {
+            FileRepository localRepo = new FileRepository(this.baseDir + "/.git");
+            this.git = new Git(localRepo);
+            if (scmPassword != null && !scmPassword.trim().isEmpty()) {
+                this.credentialsProvider = new UsernamePasswordAndPassphraseCredentialProvider(scmUser, scmPassword);
+            }
+            if (properties != null && "false".equals(properties.getProperty("gitDoPush"))) {
+                this.doPush = false;
+                LOG.info("GIT push is disabled");
+            }
+
+        } catch (Exception e) {
+            LOG.error("Project seems not be within a GIT repository!", e);
         }
-        if (i instanceof CredentialItem.StringType) {
-          if (i.getPromptText().equals("Password: ") || i.getPromptText().startsWith("Passphrase ")) {
-            ((CredentialItem.StringType) i).setValue(this.password);
-            continue;
-          }
-        }
-        throw new UnsupportedCredentialItem(uri, i.getClass().getName() + ":" + i.getPromptText());
-      }
-      return true;
     }
-  }
+
+    private File findGitRepo(File baseDir) {
+        File dir = baseDir;
+        do {
+            if (new File(dir, ".git").exists()) {
+                return dir;
+            }
+            dir = dir.getParentFile();
+        } while (dir != null);
+
+        return null;
+    }
+
+    private static class UsernamePasswordAndPassphraseCredentialProvider extends CredentialsProvider {
+
+        private String username;
+        private String password;
+
+        private UsernamePasswordAndPassphraseCredentialProvider(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
+        @Override
+        public boolean supports(CredentialItem... items) {
+            return true;
+        }
+
+        @Override
+        public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+            for (CredentialItem i : items) {
+                if (i instanceof CredentialItem.Username) {
+                    ((CredentialItem.Username) i).setValue(username);
+                    continue;
+                }
+                if (i instanceof CredentialItem.Password) {
+                    ((CredentialItem.Password) i).setValue(this.password.toCharArray());
+                    continue;
+                }
+                if (i instanceof CredentialItem.StringType) {
+                    if (i.getPromptText().equals("Password: ") || i.getPromptText().startsWith("Passphrase ")) {
+                        ((CredentialItem.StringType) i).setValue(this.password);
+                        continue;
+                    }
+                }
+                throw new UnsupportedCredentialItem(uri, i.getClass().getName() + ":" + i.getPromptText());
+            }
+            return true;
+        }
+    }
 
 }

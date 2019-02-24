@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,28 +23,28 @@ package at.nonblocking.maven.nonsnapshot.model;
  */
 public class MavenModuleDependency {
 
-  private int versionLocation;
-  private MavenArtifact artifact;
+    private int versionLocation;
+    private MavenArtifact artifact;
 
-  public MavenModuleDependency(int versionLocation, MavenArtifact artifact) {
-    this.versionLocation = versionLocation;
-    this.artifact = artifact;
-  }
+    public MavenModuleDependency(int versionLocation, MavenArtifact artifact) {
+        this.versionLocation = versionLocation;
+        this.artifact = artifact;
+    }
 
-  public int getVersionLocation() {
-    return versionLocation;
-  }
+    public int getVersionLocation() {
+        return versionLocation;
+    }
 
-  public void setVersionLocation(int versionLocation) {
-    this.versionLocation = versionLocation;
-  }
+    public void setVersionLocation(int versionLocation) {
+        this.versionLocation = versionLocation;
+    }
 
-  public MavenArtifact getArtifact() {
-    return artifact;
-  }
+    public MavenArtifact getArtifact() {
+        return artifact;
+    }
 
-  public void setArtifact(MavenArtifact artifact) {
-    this.artifact = artifact;
-  }
+    public void setArtifact(MavenArtifact artifact) {
+        this.artifact = artifact;
+    }
 
 }

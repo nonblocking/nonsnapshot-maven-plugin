@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,38 +22,38 @@ package at.nonblocking.maven.nonsnapshot.model;
  */
 public class MavenArtifact {
 
-  private String groupId;
-  private String artifactId;
-  private String version;
+    private String groupId;
+    private String artifactId;
+    private String version;
 
-  public MavenArtifact(String groupId, String artifactId, String version) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.version = version;
-  }
+    public MavenArtifact(String groupId, String artifactId, String version) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+    }
 
-  public String getGroupId() {
-    return groupId;
-  }
+    public String getGroupId() {
+        return groupId;
+    }
 
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
-  }
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
-  public String getArtifactId() {
-    return artifactId;
-  }
+    public String getArtifactId() {
+        return artifactId;
+    }
 
-  public void setArtifactId(String artifactId) {
-    this.artifactId = artifactId;
-  }
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public void setVersion(String version) {
-    this.version = version;
-  }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 }

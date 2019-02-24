@@ -16,61 +16,61 @@ import static junit.framework.Assert.assertTrue;
 @Ignore
 public class ScmHandlerGitImplTest {
 
-  private static final String SCM_PASSPHRASE = "???";
-  private static final String GIT_TEST_FOLDER = "???";
+    private static final String SCM_PASSPHRASE = "???";
+    private static final String GIT_TEST_FOLDER = "???";
 
-  @Test
-  public void testGetLastCommitDate() throws Exception {
-    File path = new File(GIT_TEST_FOLDER);
+    @Test
+    public void testGetLastCommitDate() throws Exception {
+        File path = new File(GIT_TEST_FOLDER);
 
-    ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
-    Date lastCommitDate = scmService.getLastCommitDate(path);
+        ScmHandler scmService = new ScmHandlerGitImpl();
+        scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
+        Date lastCommitDate = scmService.getLastCommitDate(path);
 
-    assertNotNull(lastCommitDate);
-  }
+        assertNotNull(lastCommitDate);
+    }
 
-  @Test
-  public void testCheckChangesSinceDate() throws Exception {
-    File path = new File(GIT_TEST_FOLDER);
+    @Test
+    public void testCheckChangesSinceDate() throws Exception {
+        File path = new File(GIT_TEST_FOLDER);
 
-    ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
+        ScmHandler scmService = new ScmHandlerGitImpl();
+        scmService.init(new File(GIT_TEST_FOLDER), null, null, null);
 
-    boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 7, 26), new Date());
+        boolean changes = scmService.checkChangesSinceDate(path, new Date(114, 7, 26), new Date());
 
-    assertTrue(changes);
-  }
+        assertTrue(changes);
+    }
 
-  @Test
-  public void testNoWorkingCopy() throws Exception {
-    ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File("target"), null, null, null);
+    @Test
+    public void testNoWorkingCopy() throws Exception {
+        ScmHandler scmService = new ScmHandlerGitImpl();
+        scmService.init(new File("target"), null, null, null);
 
-    assertFalse(scmService.isWorkingCopy(new File("test")));
-  }
+        assertFalse(scmService.isWorkingCopy(new File("test")));
+    }
 
-  @Test
-  public void testCommit() throws Exception {
-    ScmHandler scmService = new ScmHandlerGitImpl();
-    scmService.init(new File(GIT_TEST_FOLDER), null, SCM_PASSPHRASE, null);
+    @Test
+    public void testCommit() throws Exception {
+        ScmHandler scmService = new ScmHandlerGitImpl();
+        scmService.init(new File(GIT_TEST_FOLDER), null, SCM_PASSPHRASE, null);
 
-    File file1 = new File(GIT_TEST_FOLDER + "/test1.txt");
-    File file2 = new File(GIT_TEST_FOLDER + "/test2.txt");
+        File file1 = new File(GIT_TEST_FOLDER + "/test1.txt");
+        File file2 = new File(GIT_TEST_FOLDER + "/test2.txt");
 
-    PrintWriter writer1 = new PrintWriter(file1);
-    writer1.write(String.valueOf(System.currentTimeMillis()));
-    writer1.close();
+        PrintWriter writer1 = new PrintWriter(file1);
+        writer1.write(String.valueOf(System.currentTimeMillis()));
+        writer1.close();
 
-    PrintWriter writer2 = new PrintWriter(file2);
-    writer2.write(String.valueOf(System.currentTimeMillis()));
-    writer2.close();
+        PrintWriter writer2 = new PrintWriter(file2);
+        writer2.write(String.valueOf(System.currentTimeMillis()));
+        writer2.close();
 
-    scmService.commitFiles(Arrays.asList(
-        file1,
-        file2
-    ), "Test");
-  }
+        scmService.commitFiles(Arrays.asList(
+                file1,
+                file2
+        ), "Test");
+    }
 
 
 }
