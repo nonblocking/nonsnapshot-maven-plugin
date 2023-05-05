@@ -1,16 +1,29 @@
 package at.nonblocking.maven.nonsnapshot;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
-import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
-import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
@@ -21,7 +34,9 @@ import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
 
 public class NonSnapshotUpdateVersionsMojoTest {
 
@@ -494,7 +509,7 @@ public class NonSnapshotUpdateVersionsMojoTest {
         verify(this.mockMavenPomHandler).readArtifact(model1);
         verify(this.mockDependencyTreeProcessor).buildDependencyTree(artifactList);
         verify(this.mockMavenPomHandler, times(0)).updateArtifact(wsArtifact1);
-        verify(this.mockScmHandler, times(0)).commitFiles(anyListOf(File.class), anyString());
+        verify(this.mockScmHandler, times(0)).commitFiles(anyList(), anyString());
     }
 
     @Test

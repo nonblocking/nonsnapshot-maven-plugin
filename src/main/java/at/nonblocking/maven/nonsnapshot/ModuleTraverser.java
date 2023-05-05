@@ -15,11 +15,11 @@
  */
 package at.nonblocking.maven.nonsnapshot;
 
+import java.util.List;
+
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
-
-import java.util.List;
 
 /**
  * Traverses all nested Maven modules

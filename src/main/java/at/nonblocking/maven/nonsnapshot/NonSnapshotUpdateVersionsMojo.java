@@ -15,24 +15,30 @@
  */
 package at.nonblocking.maven.nonsnapshot;
 
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
-import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
-import at.nonblocking.maven.nonsnapshot.model.MavenModule;
-import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
-import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
-import org.apache.maven.model.Model;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.maven.model.Model;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
+import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
+import at.nonblocking.maven.nonsnapshot.model.MavenModule;
+import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
+import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 
 /**
  * Main Goal of this Plugin.

@@ -1,7 +1,18 @@
 package at.nonblocking.maven.nonsnapshot;
 
-import at.nonblocking.maven.nonsnapshot.impl.UpstreamDependencyHandlerDefaultImpl;
-import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -11,14 +22,8 @@ import org.eclipse.aether.version.Version;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
+import at.nonblocking.maven.nonsnapshot.impl.UpstreamDependencyHandlerDefaultImpl;
+import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 
 public class UpstreamDependencyHandlerDefaultImplTest {
 

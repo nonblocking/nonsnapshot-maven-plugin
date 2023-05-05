@@ -15,9 +15,11 @@
  */
 package at.nonblocking.maven.nonsnapshot.impl;
 
-import at.nonblocking.maven.nonsnapshot.PathUtil;
-import at.nonblocking.maven.nonsnapshot.ScmHandler;
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
 import com.jcraft.jsch.Session;
 import org.codehaus.plexus.component.annotations.Component;
 import org.eclipse.jgit.api.Git;
@@ -25,15 +27,18 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.*;
-
+import org.eclipse.jgit.transport.CredentialItem;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.URIish;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import at.nonblocking.maven.nonsnapshot.PathUtil;
+import at.nonblocking.maven.nonsnapshot.ScmHandler;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
 /**
  * GIT implementation of {@link at.nonblocking.maven.nonsnapshot.ScmHandler} based on JGit.
@@ -166,7 +171,6 @@ public class ScmHandlerGitImpl implements ScmHandler {
             throw new NonSnapshotPluginException("Failed to commit files!", e);
         }
     }
-
 
     @Override
     public void init(File baseDir, String scmUser, String scmPassword, Properties properties) {

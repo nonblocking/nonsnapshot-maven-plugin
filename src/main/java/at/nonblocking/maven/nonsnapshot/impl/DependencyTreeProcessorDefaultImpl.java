@@ -18,7 +18,6 @@ package at.nonblocking.maven.nonsnapshot.impl;
 import java.io.PrintStream;
 import java.util.List;
 
-import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
@@ -28,6 +27,7 @@ import at.nonblocking.maven.nonsnapshot.DependencyTreeProcessor;
 import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 import at.nonblocking.maven.nonsnapshot.model.MavenModule;
 import at.nonblocking.maven.nonsnapshot.model.MavenModuleDependency;
+import at.nonblocking.maven.nonsnapshot.model.UpdatedUpstreamMavenArtifact;
 
 /**
  * Default {@link DependencyTreeProcessor} implementation.

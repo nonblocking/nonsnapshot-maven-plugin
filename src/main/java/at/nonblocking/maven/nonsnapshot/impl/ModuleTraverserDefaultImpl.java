@@ -15,8 +15,14 @@
  */
 package at.nonblocking.maven.nonsnapshot.impl;
 
-import at.nonblocking.maven.nonsnapshot.ModuleTraverser;
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.maven.model.InputSource;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
@@ -29,9 +35,8 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import at.nonblocking.maven.nonsnapshot.ModuleTraverser;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
 
 /**
  * Default implementation of a module traverser.

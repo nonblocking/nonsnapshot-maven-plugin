@@ -1,16 +1,18 @@
 package at.nonblocking.maven.nonsnapshot;
 
-import at.nonblocking.maven.nonsnapshot.impl.ModuleTraverserDefaultImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import at.nonblocking.maven.nonsnapshot.impl.ModuleTraverserDefaultImpl;
 
 public class ModuleTraverserDefaultImplTest {
 

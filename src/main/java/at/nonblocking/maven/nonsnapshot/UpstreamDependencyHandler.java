@@ -15,13 +15,14 @@
  */
 package at.nonblocking.maven.nonsnapshot;
 
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
-import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
+import java.util.List;
+
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-import java.util.List;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
+import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 
 /**
  * Handler for upstream dependencies

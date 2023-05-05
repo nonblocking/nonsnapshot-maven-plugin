@@ -15,11 +15,11 @@
  */
 package at.nonblocking.maven.nonsnapshot.impl;
 
-import at.nonblocking.maven.nonsnapshot.ProcessedUpstreamDependency;
-import at.nonblocking.maven.nonsnapshot.UpstreamDependencyHandler;
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
-import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
-import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -33,10 +33,11 @@ import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
+import at.nonblocking.maven.nonsnapshot.ProcessedUpstreamDependency;
+import at.nonblocking.maven.nonsnapshot.UpstreamDependencyHandler;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotDependencyResolverException;
+import at.nonblocking.maven.nonsnapshot.exception.NonSnapshotPluginException;
+import at.nonblocking.maven.nonsnapshot.model.MavenArtifact;
 
 /**
  * Default implementation of UpstreamDependencyHandler

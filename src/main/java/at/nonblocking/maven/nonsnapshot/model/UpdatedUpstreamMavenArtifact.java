@@ -15,10 +15,6 @@
  */
 package at.nonblocking.maven.nonsnapshot.model;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Represents an (updated) upstream artifact; so dirty will always return true.
  *
