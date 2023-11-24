@@ -102,6 +102,9 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
     @Parameter(defaultValue = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN)
     private String timestampQualifierPattern = DEFAULT_TIMESTAMP_QUALIFIER_PATTERN;
 
+    @Parameter(defaultValue = "false")
+    private boolean ignoreTimestampQualifier;
+
     @Parameter
     private List<String> upstreamDependencies;
 
@@ -286,6 +289,14 @@ abstract class NonSnapshotBaseMojo extends AbstractMojo implements Contextualiza
 
     public void setTimestampQualifierPattern(String timestampQualifierPattern) {
         this.timestampQualifierPattern = timestampQualifierPattern;
+    }
+
+    public boolean isIgnoreTimestampQualifier() {
+        return ignoreTimestampQualifier;
+    }
+
+    public void setIgnoreTimestampQualifier(boolean ignoreTimestampQualifier) {
+        this.ignoreTimestampQualifier = ignoreTimestampQualifier;
     }
 
     public List<String> getUpstreamDependencies() {

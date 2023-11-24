@@ -152,19 +152,18 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 } else {
                     if (getScmType() == SCM_TYPE.SVN && isUseSvnRevisionQualifier()) {
 
-                        try {
-                            long currentRev = getScmHandler().getCurrentRevisionId(mavenModule.getPomFile().getParentFile());
-                            long revFromQualifier = Long.parseLong(qualifierString);
-                            if (revFromQualifier != currentRev && getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), revFromQualifier, currentRev)) {
-                                LOG.info("Module {}:{}: There were commits after the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
-                                mavenModule.setDirty(true);
-                            }
-                        } catch (NumberFormatException e) {
-                            LOG.warn("Invalid SVN revision: {}", qualifierString);
-                            mavenModule.setDirty(true);
+                      try {
+                        long currentRev = getScmHandler().getCurrentRevisionId(mavenModule.getPomFile().getParentFile());
+                        long revFromQualifier = Long.parseLong(qualifierString);
+                        if (revFromQualifier != currentRev && getScmHandler().checkChangesSinceRevision(mavenModule.getPomFile().getParentFile(), revFromQualifier, currentRev)) {
+                          LOG.info("Module {}:{}: There were commits after the revision number in the version qualifier. Assigning a new version.", mavenModule.getGroupId(), mavenModule.getArtifactId());
+                          mavenModule.setDirty(true);
                         }
-
-                    } else {
+                      } catch (NumberFormatException e) {
+                        LOG.warn("Invalid SVN revision: {}", qualifierString);
+                        mavenModule.setDirty(true);
+                      }
+                    } else if (!isIgnoreTimestampQualifier()) {
                         //Default: compare timestamps
                         try {
                             DateFormat dateFormat = new SimpleDateFormat(getTimestampQualifierPattern());
@@ -179,6 +178,10 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                                     mavenModule.getGroupId(), mavenModule.getArtifactId(), qualifierString);
                             mavenModule.setDirty(true);
                         }
+                    } else {
+                        LOG.debug("Module {}:{}: Not using timestamp so assigning a new version.",
+                                  mavenModule.getGroupId(), mavenModule.getArtifactId());
+                        mavenModule.setDirty(true);
                     }
                 }
             }
@@ -241,9 +244,11 @@ public class NonSnapshotUpdateVersionsMojo extends NonSnapshotBaseMojo {
                 }
                 if (isUseSvnRevisionQualifier()) {
                     mavenModule.setNewVersion(getBaseVersion() + "-" + getScmHandler().getCurrentRevisionId(modulesPath));
-                } else {
+                } else if (!isIgnoreTimestampQualifier()) {
                     // Use build time as version suffix
                     mavenModule.setNewVersion(getBaseVersion() + "-" + new SimpleDateFormat(getTimestampQualifierPattern()).format(NOW));
+                } else {
+                    mavenModule.setNewVersion(getBaseVersion());
                 }
             }
         }
